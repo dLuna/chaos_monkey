@@ -93,4 +93,31 @@ random_process() ->
     lists:nth(random:uniform(length(Ps)), Ps).
 
 p(Format, Data) ->
-    io:format(Format, Data).
+    catch throw(get_stacktrace), Stacktrace = erlang:get_stacktrace(),
+    MFAInfo = hd(tl(Stacktrace)),
+    String =
+        case MFAInfo of
+            {M, F, A} ->
+                format_single_line("~p ~p:~p/~p " ++ Format,
+                                   [self(), M, F, A | Data]);
+            {M, F, A, Info} ->
+                case lists:keysearch(line, 1, Info) of
+                    {value, {line, Line}} ->
+                        format_single_line("~p ~p:~p/~p #~p " ++ Format,
+                                           [self(), M, F, A, Line | Data]);
+                    false ->
+                        format_single_line("~p ~p:~p/~p " ++ Format,
+                                           [self(), M, F, A | Data])
+                end
+        end,
+    io:format("~s~n", [String]).
+
+format_single_line(Format, Data) ->
+    oneline(lists:flatten(io_lib:format(Format, Data))).
+
+oneline([$\n | Rest]) -> [$\s | newline(Rest)];
+oneline([C | Rest]) -> [C | oneline(Rest)];
+oneline([]) -> [].
+
+newline([$\s | Rest]) -> newline(Rest);
+newline(Rest) -> oneline(Rest).
