@@ -17,9 +17,10 @@ chaos_monkey:off() -> ok
 
   Will let The Chaos Monkey wreck reasonable havoc over time on your
   system.  This is the command to use if you want The Chaos Monkey
-  running all the time in your system.
+  running all the time.
 
-  It will stay away from system processes and supervisors.
+  It will stay away from system processes and supervisors like a good
+  monkey.
 
 
 chaos_monkey:havoc(Applications) -> {ok, NumberOfKilledProcesses}
