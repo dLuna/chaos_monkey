@@ -276,8 +276,8 @@ do_find_orphans() ->
                 (_) -> false end, Ps).
 
 do_havoc(Apps, Protected) ->
-    processes_by_app(Apps),
-    {error, not_yet_implemented}.
+    Ps = processes_by_app(Apps),
+    {error, not_yet_implemented, Ps}.
 
 -define(OTP_APPS,
         [appmon, asn1, common_test, compiler, cosEvent,
