@@ -92,3 +92,11 @@ documentation to see
 Still writing documentation about a future dream scenario.  Time to
 accept that it won't ever be perfect, and just go back to coding some
 of those cool features that have just been described.
+
+11:34
+
+Ok. So *now* the documentation is done.  Let's implement it.
+
+Without adding a lot of features!  Stay away from those.  They are bad
+for you.
+
