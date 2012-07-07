@@ -67,7 +67,7 @@ chaos_monkey:havoc(Applications, Protected) -> {ok, NumberOfKilledProcesses}
     all_but_deps -- As above, plus stay away from applications which
                     are only included as dependencies.
 
-    [ListOfApps] -- Sic the Chaos Monkey on the list of application.
+    [ListOfApps] -- Sic The Chaos Monkey on the list of application.
                     Remember that the Monkey will always see lonesome
                     processes that don't have the protection of an
                     application as available for harassment.
