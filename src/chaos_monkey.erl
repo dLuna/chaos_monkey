@@ -273,7 +273,27 @@ do_find_orphans() ->
 
 do_havoc(Apps, Protected) ->
     Ps = processes_by_app(Apps),
-    {error, not_yet_implemented, Ps}.
+    %% Start off by killing everything which doesn't belong to an app
+    N0 = case list:keyfind(undefined, Ps) of
+             {undefined, Undefined} ->
+                 lists:foldl(
+                   fun(Pid, N) ->
+                           case is_supervisor(Pid) of
+                               true ->
+                                   p("Why is there a supervisor which "
+                                     "doesn't belong to an application.  "
+                                     "Take a closer look at ~p", [Pid]),
+                                   N;
+                               false ->
+                                   kill(Pid),
+                                   N + 1
+                           end
+                   end, 0, Undefined);
+             false ->
+                 0
+           end,
+    N = N0,
+    {error, not_yet_implemented, N, Ps}.
 
 -define(OTP_APPS,
         [appmon, asn1, common_test, compiler, cosEvent,
