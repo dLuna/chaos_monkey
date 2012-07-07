@@ -9,7 +9,10 @@
 -export([start/0]).
 -export([start_link/0]).
 
--export([kill/0]).
+-export([calm/0]).
+-export([kill/0,
+         kill_ms/1,
+         kill_n/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -17,7 +20,7 @@
 
 -define(SERVER, ?MODULE). 
 
--record(state, {}).
+-record(state, {intervals = []}).
 
 start() ->
     application:start(?MODULE).
@@ -28,6 +31,15 @@ start_link() ->
 kill() ->
     gen_server:call(?SERVER, kill, infinity).
 
+kill_ms(Ms) ->
+    gen_server:call(?SERVER, {kill_ms, Ms}, infinity).
+
+kill_n(N) ->
+    gen_server:call(?SERVER, {kill_n, N}, infinity).
+
+calm() ->
+    gen_server:call(?SERVER, calm, infinity).
+
 init([]) ->
     random:seed(now()),
     {ok, #state{}}.
@@ -35,13 +47,32 @@ init([]) ->
 handle_call(kill, _From, State) ->
     NewState = kill_something(State),
     Reply = ok,
-    {reply, Reply, NewState}.
+    {reply, Reply, NewState};
+handle_call({kill_ms, Ms}, _From, State) ->
+    case timer:send_interval(Ms, kill) of
+        {ok, TRef} ->
+            {reply,
+             ok,
+             State#state{intervals = [TRef | State#state.intervals]}};
+        {error, Reason} ->
+            {reply, {error, Reason}, State}
+    end;
+handle_call(calm, _From, State = #state{intervals = Intervals}) ->
+    Cancels = [timer:cancel(Interval) || Interval <- Intervals],
+    {reply, Cancels, State#state{intervals = []}};
+handle_call(_Msg, _From, State) ->
+    {reply, {error, unknown_call}, State}.
+
 
 handle_cast(kill, State) ->
     NewState = kill_something(State),
     {noreply, NewState}.
 
-handle_info(_Info, State) ->
+handle_info(kill, State) ->
+    NewState = kill_something(State),
+    {noreply, State};
+handle_info(Info, State) ->
+    p("Unknown info ~p", [Info]),
     {noreply, State}.
 
 terminate(_Reason, _State) ->
