@@ -79,6 +79,6 @@ chaos_monkey:havoc(Applications, Protected) -> {ok, NumberOfKilledProcesses}
 
 kill() -> {ok, ProcData}.
 
-  Kills a random process in your system.
+  Kills a single random process in your system.
 
   ProcData contains information about the process that was killed.
