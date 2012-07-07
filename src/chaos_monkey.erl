@@ -331,6 +331,9 @@ tag_processes_by_app(IsIncludedF) when is_function(IsIncludedF, 1) ->
                         [{App, [P]} | Acc]
                 end, [], lists:sort(OnlyIncludedApps)).
 
+%% Theoretically pman_process:is_system_process/1 should say true for
+%% the shell.  Well, it doesn't, so this is a workaround until it
+%% does.
 is_shell(Pid) ->
     %% The shell never belongs to any applicition.  To optimize, check
     %% that application:get_application(Pid) yields undefined before
