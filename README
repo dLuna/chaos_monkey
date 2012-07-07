@@ -63,3 +63,7 @@ chaos_monkey:havoc(Applications, Protected) -> {ok, NumberOfKilledProcesses}
                     Remember that the Monkey will always see lonesome
                     processes that don't have the protection of an
                     application as available for harassment.
+
+kill() -> ok.
+
+  Kills a random process in your system.
