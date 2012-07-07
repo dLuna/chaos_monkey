@@ -50,8 +50,7 @@ havoc(Apps) ->
     havoc(Apps, []).
 
 havoc(Apps, Protected) ->
-    TODO_havoc = Apps = Protected,
-    throw(nyi).
+    do_havoc(Apps, Protected).
 
 kill() ->
     gen_server:call(?SERVER, kill, infinity).
@@ -271,3 +270,6 @@ do_find_orphans() ->
     %% No application and not system process.
     lists:zf(fun({P, undefined, false}) -> {true, P};
                 (_) -> false end, Ps).
+
+do_havoc(Apps, Protected) ->
+    {error, not_yet_implemented}.
