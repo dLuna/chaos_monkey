@@ -294,9 +294,9 @@ processes_by_app(all) ->
     tag_processes_by_app(fun(_) -> true end);
 processes_by_app(all_but_otp) ->
     tag_processes_by_app(fun(App) -> not(lists:member(App, ?OTP_APPS)) end);
-processes_by_app(all_but_deps) ->
-    TODO = todo,
-    tag_processes_by_app(fun(App) -> not(lists:member(App, ?OTP_APPS)) end);
+%% processes_by_app(all_but_deps) ->
+%%     TODO = todo,
+%%     tag_processes_by_app(fun(App) -> not(lists:member(App, ?OTP_APPS)) end);
 processes_by_app(Apps) ->
     tag_processes_by_app(fun(undefined) -> true;
                             (App) -> not(lists:member(App, Apps)) end).
