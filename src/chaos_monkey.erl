@@ -276,8 +276,6 @@ do_find_orphans() ->
            application:get_application(P),
            pman_process:is_system_process(P)}
           || P <- erlang:processes()],
-    TODO_ignore_shell = "still need a good way to find the shell processes",
-    %% No application and not system process.
     lists:zf(fun({P, undefined, false}) ->
                      case is_shell(P) of
                          true -> false;
