@@ -50,24 +50,21 @@ chaos_monkey:havoc(Applications, Protected) ->
   Supervisors are too strong for The Chaos Monkey, so it will kill
   their children instead aiming to kill by going above the restart
   threshold.  The Chaos Monkey is not suicidal so it will respect
-  restart thresholds of top level supervisors.
+  restart thresholds of permanent top level supervisors.
 
-  The Chaos Monkey will stay away from Protected processes (default
-  []), which can be protected by name or pid.
+  As well as not killing supervisors, system processes and processes
+  in the kernel application are too strong.  As mentioned above The
+  Chaos Monkey is also not suicidal.  On top of this, the caller can
+  specify an optional list of Protected processes.  These can be
+  specified by name or pid.
 
-  System processes and processes belonging to the kernel application
-  are always protected, as is chaos_monkey itself.
+  The Applications argument, tells The Chaos Monkey to focus its
+  killing spree on:
 
-  Applications decide which applications are available for killing:
+    all -- All applications are available for killing.
 
-    all -- All applications are available for killing.  Only Protected
-           processes are safe from The Monkey.
-
-    all_but_otp -- As above, plus stay away from applications in OTP.
-                   Default.
-
-    %% all_but_deps -- As above, plus stay away from applications which
-    %%                 are only included as dependencies.
+    all_but_otp -- The Chaos Monkey will stay away from applications
+                   in OTP.  Everything else is fair bait.  Default.
 
     [ListOfApps] -- Sic The Chaos Monkey on the list of application.
                     Remember that the Monkey will always see lonesome
