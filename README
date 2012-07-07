@@ -58,12 +58,15 @@ chaos_monkey:havoc(Applications, Protected) ->
   threshold.  The Chaos Monkey is not suicidal so it will respect
   restart thresholds of top level supervisors.
 
-  The Chaos Monkey will stay away from Protected processes, which can
-  be protected by name or pid.  System processes and processes
-  belonging to the kernel application are always protected, as is
-  chaos_monkey itself.  It doesn't like seafood nor snails, so the
-  shell is also protected (NOTE: The Chaos Monkey has a bug and can't
-  recognize shells at the moment).
+  The Chaos Monkey will stay away from Protected processes (default
+  []), which can be protected by name or pid.
+
+  System processes and processes belonging to the kernel application
+  are always protected, as is chaos_monkey itself.
+
+  %% It doesn't like seafood nor snails, so the shell is also protected
+  %% (NOTE: The Chaos Monkey has a bug and can't recognize shells at the
+  %% moment).
 
   Processes that don't belong to an application or are not part of a
   supervision tree are eaten for lunch.
