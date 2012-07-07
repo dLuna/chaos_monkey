@@ -103,3 +103,21 @@ for you.
 12:34
 
 Sweet.  find_orphans/0 seems to work.
+
+16:20
+
+I forgot all about writing here.
+
+chaos_monkey:on/0 and off/0 work as announced.  This is awesome I
+think.  If I have time I will add configuration options and stuff.
+For the time being it works great with some reasonable defaults.  It
+kills a process every five seconds on average.  Should be good enough
+to run in most production systems.
+
+I've started looking at havoc/0,1,2 which is more of a single shot
+thing.  Aim everything at an application and see how it recovers.
+Going slowly, but in the right direction.
+
+Anderson Silva is fighting tonight, so there will be a fight break
+later today.  Hope I can finish a simple version of havoc until then.
+
