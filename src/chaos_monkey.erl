@@ -132,15 +132,15 @@ p_pidinfo(Killable, Pid, App, IsSystemProcess, IsSystemApp, IsSupervisor) ->
                     true -> "About to";
                     false -> "Cannot"
                 end,
+    FName = case erlang:process_info(Pid, registered_name) of
+                {registered_name, Name} ->
+                    io_lib:format(" (~s)", [Name]);
+                "" -> ""
+            end,
     FApp = case App of
                undefined -> "";
                {ok, A} -> io_lib:format(" in app ~s", [A])
            end,
-    FName = case erlang:process_info(Pid, registered_name) of
-                {registered_name, Name} ->
-                    io_lib:format(" with the name of ~s", [Name]);
-                "" -> ""
-            end,
     Immunities =
         [case IsSystemProcess of
              true -> " is a system process";
@@ -160,7 +160,7 @@ p_pidinfo(Killable, Pid, App, IsSystemProcess, IsSystemApp, IsSupervisor) ->
             Imms ->
                 [" because it", string:join(Imms, " and")]
         end,
-    p("~s kill ~p~s~s~s.", [FKillable, Pid, FApp, FName, FImmunities]).
+    p("~s kill ~p~s~s~s.", [FKillable, Pid, FName, FApp, FImmunities]).
 
 is_supervisor(Pid) ->
     %% inspired by pman_process:is_system_process2/1 which seems
