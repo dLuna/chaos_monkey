@@ -163,3 +163,9 @@ Let's have a small break.
 
 Break over.
 
+18:25
+
+Lots of cleanup of code and documentation.  Time to focus on having
+some sort of version of havoc ready before going to bed.
+
+
