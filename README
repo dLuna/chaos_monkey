@@ -71,7 +71,8 @@ chaos_monkey:havoc(Applications, Protected) ->
                     processes that don't have the protection of an
                     application as available for harassment.
 
-kill() -> {ok, ProcData}.
+
+chaos_monkey:kill() -> {ok, ProcData}.
 
   Kills a single random process in your system.
 
