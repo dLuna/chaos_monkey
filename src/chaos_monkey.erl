@@ -9,9 +9,15 @@
 -export([start/0]).
 -export([start_link/0]).
 
+-export([find_orphans/0,
+         havoc/1,
+         havoc/2,
+         kill/0,
+         off/0,
+         on/0]).
+
 -export([calm/0]).
--export([kill/0,
-         kill_ms/1,
+-export([kill_ms/1,
          kill_n/1]).
 
 %% gen_server callbacks
@@ -28,8 +34,30 @@ start() ->
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% START OF EXTERNAL API
+
+find_orphans() ->
+    TODO_find_orphans = throw(nyi).
+
+havoc(Apps) ->
+    havoc(Apps, []).
+
+havoc(Apps, Protected) ->
+    TODO_havoc = Apps = Protected,
+    throw(nyi).
+
 kill() ->
     gen_server:call(?SERVER, kill, infinity).
+
+on() ->
+    TODO_on = throw(nyi).
+
+off() ->
+    TODO_off = throw(nyi).
+
+%% END OF EXTERNAL API
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 kill_ms(Ms) ->
     gen_server:call(?SERVER, {kill_ms, Ms}, infinity).
