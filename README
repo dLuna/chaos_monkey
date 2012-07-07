@@ -24,8 +24,6 @@ chaos_monkey:find_orphans() -> [Pid]
 chaos_monkey:on() -> {ok, started} | {error, already_running}
 chaos_monkey:off() -> {ok, stopped} | {error, not_running}
 
-  NOT IMPLEMENTED YET
-
   Asynchronous.
 
   Will let The Chaos Monkey wreck reasonable havoc over time on your
