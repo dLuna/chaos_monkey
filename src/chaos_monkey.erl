@@ -38,7 +38,7 @@ start_link() ->
 %% START OF EXTERNAL API
 
 find_orphans() ->
-    TODO_find_orphans = throw(nyi).
+    do_find_orphans().
 
 havoc(Apps) ->
     havoc(Apps, []).
@@ -234,3 +234,13 @@ oneline([]) -> [].
 
 newline([$\s | Rest]) -> newline(Rest);
 newline(Rest) -> oneline(Rest).
+
+do_find_orphans() ->
+    Ps = [{P,
+           application:get_application(P),
+           pman_process:is_system_process(P)}
+          || P <- erlang:processes()],
+    TODO_ignore_shell = "still need a good way to find the shell processes",
+    %% No application and not system process.
+    lists:zf(fun({P, undefined, false}) -> {true, P};
+                (_) -> false end, Ps).
