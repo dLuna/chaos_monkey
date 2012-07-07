@@ -47,17 +47,18 @@ chaos_monkey:havoc(Applications, Protected) -> {ok, NumberOfKilledProcesses}
   Synchronous.
 
   The Chaos Monkey will randomly walk through processes belonging to
-  theli st of applications and kill everything a couple of times.
+  the list of applications and kill everything a couple of times.
   Supervisors are too strong for The Chaos Monkey, so it will kill
-  their children instead aiming to kill it by going above their
-  restart threshold.  The Chaos Monkey is not suicidal so it will
-  respect restart thresholds of top level supervisors.
+  their children instead aiming to kill by going above the restart
+  threshold.  The Chaos Monkey is not suicidal so it will respect
+  restart thresholds of top level supervisors.
 
   The Chaos Monkey will stay away from Protected processes, which can
   be protected by name or pid.  System processes and processes
   belonging to the kernel application are always protected, as is
   chaos_monkey itself.  It doesn't like seafood nor snails, so the
-  shell is also protected.
+  shell is also protected (NOTE: The Chaos Monkey has a bug and can't
+  recognize shells at the moment).
 
   Processes that don't belong to an application or are not part of a
   supervision tree are eaten for lunch.
