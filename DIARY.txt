@@ -141,3 +141,25 @@ Gaah.
 
 Anyway, it seems like the answer is inside shell.erl itself.  I can us
 group:interfaces/1 to find the shell.
+
+17:27
+
+YAY!  Freaking rocks.
+
+So the stupid shell process which is a system process when kindly
+standing around waiting for something to run and then stops being a
+system process as soon as it's doing something, has now been
+discovered.
+
+I now have a way of finding out whether a Pid refers to a shell or
+not.  Let's hope that it stands up in real life.  I think so.  See
+chaos_monkey:is_shell/1 for details.
+
+17:30
+
+Let's have a small break.
+
+17:49
+
+Break over.
+
