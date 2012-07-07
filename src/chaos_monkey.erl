@@ -52,25 +52,20 @@ code_change(_OldVsn, State, _Extra) ->
 
 kill_something(State = #state{}) ->
     Pid = random_process(),
-    Name =
-        case erlang:process_info(Pid, registered_name) of
-            [] -> "not_named";
-            {registered_name, Reg} -> Reg
-        end,
-    App =
-        case application:get_application(Pid) of
-            {ok, A} -> A;
-            undefined -> undefined
-        end,
+    App = application:get_application(Pid),
     IsSystemProcess = pman_process:is_system_process(Pid),
-    IsSystemApp = lists:member(App, [kernel, chaos_monkey]),
-    case IsSystemProcess orelse IsSystemApp of
+    IsSystemApp = lists:member(App, [{ok, kernel}, {ok, chaos_monkey}]),
+    IsSupervisor = is_supervisor(Pid),
+    case IsSystemProcess orelse IsSystemApp orelse IsSupervisor of
         true ->
-            p("Cannot kill process ~p belonging to ~p (~s)",
-              [Pid, App, Name]),
+            p_pidinfo(false, Pid, App, IsSystemProcess,
+                      IsSystemApp, IsSupervisor),
             kill_something(State);
         false ->
-            p("About to kill ~p from ~p (~s)", [Pid, App, Name]),
+            p_pidinfo(true, Pid, App, IsSystemProcess,
+                      IsSystemApp, IsSupervisor),
+            Info = erlang:process_info(Pid),
+            p("~p", [Info]),
             erlang:monitor(process, Pid),
             exit(Pid, im_killing_you),
             DeathReason =
@@ -92,6 +87,56 @@ random_process() ->
     Ps = erlang:processes(),
     lists:nth(random:uniform(length(Ps)), Ps).
 
+p_pidinfo(Killable, Pid, App, IsSystemProcess, IsSystemApp, IsSupervisor) ->
+    FKillable = case Killable of
+                    true -> "About to";
+                    false -> "Cannot"
+                end,
+    FApp = case App of
+               undefined -> "";
+               {ok, A} -> io_lib:format(" in app ~s", [A])
+           end,
+    FName = case erlang:process_info(Pid, registered_name) of
+                {registered_name, Name} ->
+                    io_lib:format(" with the name of ~s", [Name]);
+                "" -> ""
+            end,
+    Immunities =
+        [case IsSystemProcess of
+             true -> " is a system process";
+             false -> no
+         end,
+         case IsSystemApp of
+             true -> " belongs to a system app";
+             false -> no
+         end,
+         case IsSupervisor of
+             true -> " is a supervisor";
+             false -> no
+         end],
+    FImmunities =
+        case lists:filter(fun(X) -> X =/= no end, Immunities) of
+            [] -> "";
+            Imms ->
+                [" because it", string:join(Imms, " and")]
+        end,
+    p("~s kill ~p~s~s~s.", [FKillable, Pid, FApp, FName, FImmunities]).
+
+is_supervisor(Pid) ->
+    %% inspired by pman_process:is_system_process2/1 which seems
+    %% cleaner somehow to just grabbing the info from the process_info
+    %% dictionary (this is what happens in the background anyway).
+    {initial_call, Init} = erlang:process_info(Pid, initial_call),
+    SortofActualInit =
+        case Init of
+            {proc_lib, init_p, 5} -> proc_lib:translate_initial_call(Pid);
+            Init -> Init
+        end,
+    case SortofActualInit of
+        {supervisor, _, _} -> true;
+        _ -> p("Init: ~p", [SortofActualInit]), false
+    end.
+    
 p(Format, Data) ->
     catch throw(get_stacktrace), Stacktrace = erlang:get_stacktrace(),
     MFAInfo = hd(tl(Stacktrace)),
