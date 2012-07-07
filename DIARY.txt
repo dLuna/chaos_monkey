@@ -58,3 +58,18 @@ Support has been added for not killing supervisors.  Yay!
 And I rewrote the whole printout thing.
 
 I have no idea how to avoid killing the Erlang shell.
+
+00:05
+
+Speed of development has slowed down.
+
+lists:filter(fun({P, App, S}) -> App =:= undefined end, [{P, application:get_application(P), pman_process:is_system_process(P)} || P <- erlang:processes()]).
+
+00:30
+
+Freenode #spawnfest rocks.  Once again very useful.  I did not know
+about sys:get_status(whereis(chaos_monkey_sup)). before this.  Super.
+
+I got tricked since I was so certain that supervisor was *not* a
+gen_server.  Which it is of course.  Even though it shouldn't for so
+many reasons.
