@@ -273,7 +273,11 @@ do_find_orphans() ->
           || P <- erlang:processes()],
     TODO_ignore_shell = "still need a good way to find the shell processes",
     %% No application and not system process.
-    lists:zf(fun({P, undefined, false}) -> {true, P};
+    lists:zf(fun({P, undefined, false}) ->
+                     case is_shell(P) of
+                         true -> false;
+                         false -> {true, P}
+                     end;
                 (_) -> false end, Ps).
 
 do_havoc(Apps, Protected) ->
@@ -321,3 +325,20 @@ tag_processes_by_app(IsIncludedF) when is_function(IsIncludedF, 1) ->
                    ({App, P}, Acc) ->
                         [{App, [P]} | Acc]
                 end, [], lists:sort(OnlyIncludedApps)).
+
+is_shell(Pid) ->
+    %% The shell never belongs to any applicition.  To optimize, check
+    %% that application:get_application(Pid) yields undefined before
+    %% calling this function.
+    {group_leader, Leader} = erlang:process_info(Pid, group_leader),
+    case lists:keyfind(shell, 1, group:interfaces(Leader)) of
+        {shell, Shell} ->
+            case Shell =:= Pid of
+                true -> true;
+                false ->
+                    case erlang:process_info(Shell, dictionary) of
+                        {dictionary, Dict} ->
+                            proplists:get_value(evaluator, Dict) =:= Pid
+                    end
+            end
+    end.
