@@ -274,7 +274,7 @@ do_find_orphans() ->
 do_havoc(Apps, Protected) ->
     Ps = processes_by_app(Apps),
     %% Start off by killing everything which doesn't belong to an app
-    N0 = case list:keyfind(undefined, Ps) of
+    N0 = case lists:keyfind(undefined, 1, Ps) of
              {undefined, Undefined} ->
                  lists:foldl(
                    fun(Pid, N) ->
