@@ -272,4 +272,47 @@ do_find_orphans() ->
                 (_) -> false end, Ps).
 
 do_havoc(Apps, Protected) ->
+    processes_by_app(Apps),
     {error, not_yet_implemented}.
+
+-define(OTP_APPS,
+        [appmon, asn1, common_test, compiler, cosEvent,
+         cosEventDomain, cosFileTransfer, cosNotification,
+         cosProperty, cosTime, cosTransactions, crypto, debugger,
+         dialyzer, diameter, edoc, eldap, erl_docgen, erl_interface,
+         erts, et, eunit, gs, hipe, ic, inets, inviso, jinterface,
+         kernel, megaco, mnesia, observer, odbc, orber, os_mon,
+         otp_mibs, parsetools, percept, pman, public_key, reltool,
+         runtime_tools, sasl, snmp, ssh, ssl, stdlib, syntax_tools,
+         test_server, toolbar, tools, tv, typer, webtool, wx, xmerl]).
+
+processes_by_app(all) ->
+    tag_processes_by_app(fun(_) -> true end);
+processes_by_app(all_but_otp) ->
+    tag_processes_by_app(fun(App) -> not(lists:member(App, ?OTP_APPS)) end);
+processes_by_app(all_but_deps) ->
+    TODO = todo,
+    tag_processes_by_app(fun(App) -> not(lists:member(App, ?OTP_APPS)) end);
+processes_by_app(Apps) ->
+    tag_processes_by_app(fun(undefined) -> true;
+                            (App) -> not(lists:member(App, Apps)) end).
+
+tag_processes_by_app(IsIncludedF) when is_function(IsIncludedF, 1) ->
+    Ps = [{case application:get_application(P) of
+               {ok, App} -> App;
+               undefined -> undefined
+           end, P} || P <- erlang:processes()],
+    OnlyIncludedApps =
+        lists:filter(
+          fun({App, P}) ->
+                  not(pman_process:is_system_process(P))
+                      andalso
+                      not(lists:member(App, [kernel, chaos_monkey]))
+                      andalso
+                      IsIncludedF(App)
+          end, Ps),
+    lists:foldl(fun({App, P}, [{App, Ps} | Acc]) ->
+                        [{App, [P | Ps]} | Acc];
+                   ({App, P}, Acc) ->
+                        [{App, [P | Ps]} | Acc]
+                end, [], OnlyIncludedApps).
