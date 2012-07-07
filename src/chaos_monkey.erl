@@ -307,7 +307,7 @@ processes_by_app(all_but_otp) ->
 %%     tag_processes_by_app(fun(App) -> not(lists:member(App, ?OTP_APPS)) end);
 processes_by_app(Apps) ->
     tag_processes_by_app(fun(undefined) -> true;
-                            (App) -> not(lists:member(App, Apps)) end).
+                            (App) -> lists:member(App, Apps) end).
 
 tag_processes_by_app(IsIncludedF) when is_function(IsIncludedF, 1) ->
     All = [{case application:get_application(P) of
