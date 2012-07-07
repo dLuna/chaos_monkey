@@ -144,7 +144,7 @@ kill_something(State) ->
 
 kill_something(State, []) ->
     p("Nothing is killable!", []),
-    State;
+    {State, []};
 kill_something(State = #state{}, [Pid | Pids]) ->
     App = application:get_application(Pid),
     IsSystemProcess = pman_process:is_system_process(Pid),
