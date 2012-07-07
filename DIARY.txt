@@ -51,3 +51,10 @@ random processes.  Just to see if you will recover.  What doesn't kill
 you makes you stronger and all that.  Well, except in this case it's
 "what kills you makes you stronger".  So now you know.
 
+22:07
+
+Support has been added for not killing supervisors.  Yay!
+
+And I rewrote the whole printout thing.
+
+I have no idea how to avoid killing the Erlang shell.
