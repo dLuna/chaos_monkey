@@ -4,8 +4,16 @@ Start by including the chaos_monkey application amongst your
 applications.  The chaos_monkey stays in his cage and eats bananas by
 default.
 
+chaos_monkey:find_orphans() -> [Pid]
 
-chaos_monkey:run() -> ok
+  The Chaos Monkey smell processes and find the ones which don't have
+  the protection of an application.  It gladly hands them over to you.
+
+
+chaos_monkey:on() -> ok
+chaos_monkey:off() -> ok
+
+  Asynchronous.
 
   Will let The Chaos Monkey wreck reasonable havoc over time on your
   system.  This is the command to use if you want The Chaos Monkey
@@ -21,6 +29,8 @@ chaos_monkey:havoc(Applications, Protected) -> {ok, NumberOfKilledProcesses}
 
     Applications :: all | all_but_otp | all_but_deps | [application()]
     Protected :: [pid() | registered_name()]
+
+  Call is synchronous.
 
   The Chaos Monkey will randomly walk through processes belonging to
   theli st of applications and kill everything a couple of times.
@@ -38,8 +48,6 @@ chaos_monkey:havoc(Applications, Protected) -> {ok, NumberOfKilledProcesses}
   Processes that don't belong to an application or are not part of a
   supervision tree are eaten for lunch.
 
-  Call is synchronous.
-
   Applications decide which applications are available for killing:
 
     all -- All applications are available for killing.  Only Protected
@@ -54,5 +62,3 @@ chaos_monkey:havoc(Applications, Protected) -> {ok, NumberOfKilledProcesses}
                     Remember that the Monkey will always see lonesome
                     processes that don't have the protection of an
                     application as available for harassment.
-
-chaos_monkey:check()
