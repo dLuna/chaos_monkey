@@ -91,7 +91,6 @@ handle_call(calm, _From, State = #state{intervals = Intervals}) ->
 handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_call}, State}.
 
-
 handle_cast(kill, State) ->
     NewState = kill_something(State),
     {noreply, NewState}.
