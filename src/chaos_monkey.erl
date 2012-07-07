@@ -51,24 +51,43 @@ code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 kill_something(State = #state{}) ->
-    Victim = random_process(),
+    Pid = random_process(),
     Name =
-        case erlang:process_info(Victim, registered_name) of
-            [] -> "";
+        case erlang:process_info(Pid, registered_name) of
+            [] -> "not_named";
             {registered_name, Reg} -> Reg
         end,
-    App = application:get_application(Victim),
-    case pman_process:is_system_process(Victim) of
+    App =
+        case application:get_application(Pid) of
+            {ok, A} -> A;
+            undefined -> undefined
+        end,
+    IsSystemProcess = pman_process:is_system_process(Pid),
+    IsSystemApp = lists:member(App, [kernel, chaos_monkey]),
+    case IsSystemProcess orelse IsSystemApp of
         true ->
-            error_logger:info_msg("Cannot kill system process ~p (~s, ~p)",
-                                  [Victim, Name, App]),
+            error_logger:info_msg(
+              "Cannot kill process ~p belonging to ~p (~s)",
+                                  [Pid, App, Name]),
             kill_something(State);
         false ->
-            error_logger:info_msg("About to kill ~p (~s, ~p)",
-                                  [Victim, Name, App]),
-            exit(Victim, im_killing_you),
-            timer:sleep(500),
-            exit(Victim, kill),
+            error_logger:info_msg("About to kill ~p from ~p (~s)",
+                                  [Pid, App, Name]),
+            erlang:monitor(process, Pid),
+            exit(Pid, im_killing_you),
+            DeathReason =
+                receive
+                    {'DOWN', _, process, Pid, Reason} ->
+                        Reason
+                after 500 ->
+                        exit(Pid, kill),
+                        receive
+                            {'DOWN', _, process, Pid, Reason} ->
+                                Reason
+                        end
+                end,
+            error_logger:info_msg("~p died because of ~p",
+                                  [Pid, DeathReason]),
             State
     end.
 
