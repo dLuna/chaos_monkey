@@ -315,4 +315,4 @@ tag_processes_by_app(IsIncludedF) when is_function(IsIncludedF, 1) ->
                         [{App, [P | Ps]} | Acc];
                    ({App, P}, Acc) ->
                         [{App, [P]} | Acc]
-                end, [], OnlyIncludedApps).
+                end, [], lists:sort(OnlyIncludedApps)).
