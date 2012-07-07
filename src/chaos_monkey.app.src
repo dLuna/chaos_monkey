@@ -9,6 +9,7 @@
   {applications,
    [kernel,
     stdlib]},
+  {mod, {chaos_monkey_app, []}},
   {env, []}
  ]
 }.
