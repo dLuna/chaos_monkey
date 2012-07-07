@@ -5,3 +5,26 @@ It starts!  Yay!
 20:06
 
 First commit.  Skeleton files, but whatever.
+
+20:20
+
+essen at Freenode recommended cowboy_examples as a quick to get up and
+running Erlang program.  It rocks!  clone, make, ./start.sh and it's
+up.  Now I have something to kill...
+
+20:23
+
+Stupid computer!  It rebooted from having a USB camera connected to
+its USB port.  Happens every now and then.
+
+Oh, well.  I'll head for Subway and get some food.
+
+20:35
+
+Sub acquired.
+
+21:03
+
+Program works.  I can go home.  :-)
+
+Now let's make it a little bit more sophisticated.
