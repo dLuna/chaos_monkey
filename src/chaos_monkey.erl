@@ -298,10 +298,10 @@ processes_by_app(Apps) ->
                             (App) -> not(lists:member(App, Apps)) end).
 
 tag_processes_by_app(IsIncludedF) when is_function(IsIncludedF, 1) ->
-    Ps = [{case application:get_application(P) of
-               {ok, App} -> App;
-               undefined -> undefined
-           end, P} || P <- erlang:processes()],
+    All = [{case application:get_application(P) of
+                {ok, App} -> App;
+                undefined -> undefined
+            end, P} || P <- erlang:processes()],
     OnlyIncludedApps =
         lists:filter(
           fun({App, P}) ->
@@ -310,9 +310,9 @@ tag_processes_by_app(IsIncludedF) when is_function(IsIncludedF, 1) ->
                       not(lists:member(App, [kernel, chaos_monkey]))
                       andalso
                       IsIncludedF(App)
-          end, Ps),
+          end, All),
     lists:foldl(fun({App, P}, [{App, Ps} | Acc]) ->
                         [{App, [P | Ps]} | Acc];
                    ({App, P}, Acc) ->
-                        [{App, [P | Ps]} | Acc]
+                        [{App, [P]} | Acc]
                 end, [], OnlyIncludedApps).
