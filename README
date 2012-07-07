@@ -2,9 +2,10 @@ This is The CHAOS MONKEY.  It will kill your processes.
 
 "What kills you, makes you stronger" -- The Chaos Monkey
 
-Start by including the chaos_monkey application amongst your
-applications.  The chaos_monkey stays in his cage and eats bananas by
-default.  Let it out by running chaos_monkey:on().
+Start by including the chaos_monkey amongst your applications.  The
+Chaos Monkey stays in his cage and eats bananas by default.  Let it
+out by running chaos_monkey:on() or have him kill a single process
+using chaos_monkey:kill().
 
 KNOWN BUGS: The shell is not properly recognized as a system process.
 This leaves two processes for the active shell which can be killed by
