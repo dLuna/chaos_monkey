@@ -219,7 +219,12 @@ p_pidinfo(Killable, Pid, App, IsSystemProcess, IsSystemApp, IsSupervisor) ->
             Imms ->
                 [" because it", string:join(Imms, " and")]
         end,
-    p("~s kill ~p~s~s~s.", [FKillable, Pid, FName, FApp, FImmunities]).
+    case (App =:= undefined) orelse (Killable =:= true) of
+        true ->
+            p("~s kill ~p~s~s~s.", [FKillable, Pid, FName, FApp, FImmunities]);
+        false ->
+            ok
+    end.
 
 is_supervisor(Pid) ->
     %% inspired by pman_process:is_system_process2/1 which seems
