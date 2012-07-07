@@ -51,10 +51,10 @@ kill() ->
     gen_server:call(?SERVER, kill, infinity).
 
 on() ->
-    TODO_on = throw(nyi).
+    gen_server:call(?SERVER, on, infinity).
 
 off() ->
-    TODO_off = throw(nyi).
+    gen_server:call(?SERVER, off, infinity).
 
 %% END OF EXTERNAL API
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,9 +73,16 @@ init([]) ->
     {ok, #state{}}.
 
 handle_call(kill, _From, State) ->
-    NewState = kill_something(State),
-    Reply = ok,
-    {reply, Reply, NewState};
+    {NewState, ProcInfo} = kill_something(State),
+    {reply, {ok, ProcInfo}, NewState};
+handle_call(on, _From, State) ->
+    TODO_on = throw(nyi),
+    NewState = State,
+    {reply, ok, NewState};
+handle_call(off, _From, State) ->
+    TODO_off = throw(nyi),
+    NewState = State,
+    {reply, ok, NewState};
 handle_call({kill_ms, Ms}, _From, State) ->
     case timer:send_interval(Ms, kill) of
         {ok, TRef} ->
