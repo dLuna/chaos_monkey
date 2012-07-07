@@ -1,0 +1,14 @@
+%% -*- Erlang -*-
+{application, chaos_monkey,
+ [
+  {description, "A Monkey that Spreads Chaos"},
+  {vsn, git},
+  {modules,
+   [chaos_monkey]},
+  {registered, [chaos_monkey]},
+  {applications,
+   [kernel,
+    stdlib]},
+  {env, []}
+ ]
+}.
