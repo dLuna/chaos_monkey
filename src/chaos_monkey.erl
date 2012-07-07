@@ -70,7 +70,7 @@ handle_cast(kill, State) ->
 
 handle_info(kill, State) ->
     NewState = kill_something(State),
-    {noreply, State};
+    {noreply, NewState};
 handle_info(Info, State) ->
     p("Unknown info ~p", [Info]),
     {noreply, State}.
