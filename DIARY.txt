@@ -39,3 +39,15 @@ Unfortunately it shouldn't really be allowed to kill supervisors,
 because that breaks one of the Rules of Erlang.  Let's see if I can
 identify those.
 
+22:12
+
+Well that was ten minutes of making my printouts nicer looking.  Hmm.
+
+22:13
+
+So, dear diary.  I never told you what the program is supposed to do.
+Well it's a process killer.  I walks around in your system killing
+random processes.  Just to see if you will recover.  What doesn't kill
+you makes you stronger and all that.  Well, except in this case it's
+"what kills you makes you stronger".  So now you know.
+
