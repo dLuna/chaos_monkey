@@ -145,7 +145,7 @@ kill_something(State = #state{}, [Pid | Pids]) ->
                         end
                 end,
             p("~p died because of ~p", [Pid, DeathReason]),
-            State
+            {State, App}
     end.
 
 randomize(Xs) ->
