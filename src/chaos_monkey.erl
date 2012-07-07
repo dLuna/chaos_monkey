@@ -272,34 +272,40 @@ do_find_orphans() ->
                 (_) -> false end, Ps).
 
 do_havoc(Apps, Protected) ->
-    Ps = processes_by_app(Apps),
+    Ps0 = processes_by_app(Apps),
     %% Start off by killing everything which doesn't belong to an app
-    N0 = case lists:keyfind(undefined, 1, Ps) of
-             {undefined, Undefined} ->
-                 lists:foldl(
-                   fun(Pid, N) ->
-                           case is_supervisor(Pid) of
-                               true ->
-                                   p("Why is there a supervisor which "
-                                     "doesn't belong to an application.  "
-                                     "Take a closer look at ~p", [Pid]),
-                                   %% Should I handle this better?
-                                   %% Probably.  Because this will
-                                   %% happen whenever somebody out
-                                   %% there can't be bothered making
-                                   %% proper app files. Which happens
-                                   %% a lot.
-                                   N;
-                               false ->
-                                   kill(Pid),
-                                   N + 1
-                           end
-                   end, 0, Undefined);
-             false ->
-                 0
-           end,
-    N = N0,
-    {error, not_yet_implemented, N, Ps}.
+    {N0, Ps1} =
+        case lists:keytake(undefined, 1, Ps0) of
+            {value, {undefined, Undefined}, PsNoUndefined} ->
+                {lists:foldl(
+                  fun(Pid, N) ->
+                          case is_supervisor(Pid) of
+                              true ->
+                                  p("Why is there a supervisor which "
+                                    "doesn't belong to an application.  "
+                                    "Take a closer look at ~p", [Pid]),
+                                  %% Should I handle this better?
+                                  %% Probably.  Because this will
+                                  %% happen whenever somebody out
+                                  %% there can't be bothered making
+                                  %% proper app files. Which happens a
+                                  %% lot.
+                                  N;
+                              false ->
+                                  kill(Pid),
+                                  N + 1
+                          end
+                  end, 0, Undefined), PsNoUndefined};
+            false ->
+                {0, Ps0}
+        end,
+    N = lists:foldl(
+          fun({App, Pids}, N) ->
+                  p("About to kill things in ~p", [App]),
+                  Killed = app_killer(Pids),
+                  N + Killed
+          end, N0, randomize(Ps1)),
+    {error, not_yet_implemented, N, Ps0}.
 
 -define(OTP_APPS,
         [appmon, asn1, common_test, compiler, cosEvent,
@@ -376,3 +382,9 @@ kill(Pid) ->
                     Reason
             end
     end.
+
+app_killer(_Pids) ->
+    TODO = "find supervisors, and build up the tree.  Kill enough "
+        "children that the supervisors start to die.  Stay away "
+        "from killing the top level supervisor.",
+    0.
