@@ -46,8 +46,27 @@ code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
 kill_something(State = #state{}) ->
-    Victim = hd(erlang:processes()),
-    exit(Victim, im_killing_you),
-    timer:sleep(500),
-    exit(Victim, kill),
-    State.
+    Victim = random_process(),
+    Name =
+        case erlang:process_info(Victim, registered_name) of
+            [] -> "";
+            {registered_name, Reg} -> Reg
+        end,
+    App = application:get_application(Victim),
+    case pman_process:is_system_process(Victim) of
+        true ->
+            error_logger:info_msg("Cannot kill system process ~p (~s, ~p)",
+                                  [Victim, Name, App]),
+            kill_something(State);
+        false ->
+            error_logger:info_msg("About to kill ~p (~s, ~p)",
+                                  [Victim, Name, App]),
+            exit(Victim, im_killing_you),
+            timer:sleep(500),
+            exit(Victim, kill),
+            State
+    end.
+
+random_process() ->
+    Ps = erlang:processes(),
+    lists:nth(random:uniform(length(Ps)), Ps).
