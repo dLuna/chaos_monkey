@@ -29,6 +29,7 @@ kill() ->
     gen_server:call(?SERVER, kill, infinity).
 
 init([]) ->
+    random:seed(now()),
     {ok, #state{}}.
 
 handle_call(kill, _From, State) ->
