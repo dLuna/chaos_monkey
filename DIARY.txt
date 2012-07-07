@@ -121,3 +121,23 @@ Going slowly, but in the right direction.
 Anderson Silva is fighting tonight, so there will be a fight break
 later today.  Hope I can finish a simple version of havoc until then.
 
+16:26
+
+I seriously need a way to identify the shell processes.  What I have
+found so far is that there are two of them.  One which is the actual
+shell, and the other which keeps track of the history.  They don't
+belong to any application.
+
+It is possible to start multiple shells in the same shell session, but
+there are still only two shell processes which are not flagged as
+system processes.
+
+17:03
+
+Ok, so I know why the shell is so elusive.  When running
+pman_process:is_system_process in the shell, it is not a system
+process.  When running the same function from somewhere else, it is.
+Gaah.
+
+Anyway, it seems like the answer is inside shell.erl itself.  I can us
+group:interfaces/1 to find the shell.
