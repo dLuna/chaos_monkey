@@ -10,6 +10,7 @@
 -export([start_link/0]).
 
 -export([find_orphans/0,
+         havoc/0,
          havoc/1,
          havoc/2,
          kill/0,
@@ -45,6 +46,9 @@ start_link() ->
 
 find_orphans() ->
     do_find_orphans().
+
+havoc() ->
+    havoc(all_but_otp).
 
 havoc(Apps) ->
     havoc(Apps, []).

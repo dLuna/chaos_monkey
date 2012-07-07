@@ -33,7 +33,8 @@ chaos_monkey:off() -> {ok, stopped} | {error, not_running}
   It will stay away from system processes and supervisors like a good
   monkey.
 
-
+chaos_monkey:havoc() ->
+    {ok, NumberOfKilledProcesses} | {error, Error}
 chaos_monkey:havoc(Applications) ->
     {ok, NumberOfKilledProcesses} | {error, Error}
 chaos_monkey:havoc(Applications, Protected) ->
@@ -72,7 +73,8 @@ chaos_monkey:havoc(Applications, Protected) ->
     all -- All applications are available for killing.  Only Protected
            processes are safe from The Monkey.
 
-    all_but_otp -- As above, plus stay away from applications in OTP
+    all_but_otp -- As above, plus stay away from applications in OTP.
+                   Default.
 
     %% all_but_deps -- As above, plus stay away from applications which
     %%                 are only included as dependencies.
