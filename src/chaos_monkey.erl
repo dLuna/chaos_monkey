@@ -26,8 +26,12 @@
 
 -define(SERVER, ?MODULE). 
 
+-define(TIMER, 5000).
+
 -record(state, {
           is_active = false,
+          avg_wait,
+          timer_ref,
           intervals = []}).
 
 start() ->
@@ -79,12 +83,15 @@ handle_call(kill, _From, State) ->
     {reply, {ok, ProcInfo}, NewState};
 
 handle_call(on, _From, State = #state{is_active = false}) ->
-    TODO_on = throw(nyi),
-    NewState = State,
-    {reply, ok, NewState};
-handle_call(off, _From, State = #state{is_active = true}) ->
-    TODO_off = throw(nyi),
-    NewState = State,
+    NewState = State#state{avg_wait = ?TIMER, is_active = true},
+    self() ! kill_something,
+    {reply, {ok, started}, NewState};
+handle_call(off, _From, State = #state{is_active = true, timer_ref = Ref}) ->
+    timer:cancel(Ref),
+    receive kill_something -> ok
+    after 0 -> ok
+    end,
+    NewState = State#state{is_active = false},
     {reply, {ok, stopped}, NewState};
 handle_call(on, _From, State = #state{is_active = true}) ->
     {reply, {error, already_running}, State};
@@ -110,6 +117,12 @@ handle_cast(kill, State) ->
     NewState = kill_something(State),
     {noreply, NewState}.
 
+handle_info(kill_something, State = #state{avg_wait = AvgWait}) ->
+    {NewState, _Info} = kill_something(State),
+    Var = 0.3, %% I.e. 70% to 130% of Waittime
+    WaitTime = round(AvgWait * ((1 - Var) + (Var * 2 * random:uniform()))),
+    {ok, Ref} = timer:send_after(WaitTime, kill_something),
+    {noreply, NewState#state{timer_ref = Ref}};
 handle_info(kill, State) ->
     NewState = kill_something(State),
     {noreply, NewState};
