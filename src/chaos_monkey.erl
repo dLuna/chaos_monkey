@@ -5,6 +5,7 @@
 -author('Daniel Luna <daniel@lunas.se>').
 -behaviour(gen_server).
 
+-compile(export_all).
 %% API
 -export([start/0]).
 -export([start_link/0]).
