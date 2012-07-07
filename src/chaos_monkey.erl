@@ -162,19 +162,7 @@ kill_something(State = #state{}, [Pid | Pids]) ->
                       IsSystemApp, IsSupervisor),
             Info = erlang:process_info(Pid),
             p("~p", [Info]),
-            erlang:monitor(process, Pid),
-            exit(Pid, im_killing_you),
-            DeathReason =
-                receive
-                    {'DOWN', _, process, Pid, Reason} ->
-                        Reason
-                after 500 ->
-                        exit(Pid, kill),
-                        receive
-                            {'DOWN', _, process, Pid, Reason} ->
-                                Reason
-                        end
-                end,
+            DeathReason = kill(Pid),
             p("~p died because of ~p", [Pid, DeathReason]),
             {State, App}
     end.
@@ -347,4 +335,18 @@ is_shell(Pid) ->
                     proplists:get_value(evaluator, Dict) =:= Pid
             end;
         false -> false
+    end.
+
+kill(Pid) ->
+    erlang:monitor(process, Pid),
+    exit(Pid, im_killing_you),
+    receive
+        {'DOWN', _, process, Pid, Reason} ->
+            Reason
+    after 500 ->
+            exit(Pid, kill),
+            receive
+                {'DOWN', _, process, Pid, Reason} ->
+                    Reason
+            end
     end.
