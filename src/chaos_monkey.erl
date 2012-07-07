@@ -324,6 +324,8 @@ tag_processes_by_app(IsIncludedF) when is_function(IsIncludedF, 1) ->
                       not(lists:member(App, [kernel, chaos_monkey]))
                       andalso
                       IsIncludedF(App)
+                      andalso
+                      not(is_shell(P))
           end, All),
     lists:foldl(fun({App, P}, [{App, Ps} | Acc]) ->
                         [{App, [P | Ps]} | Acc];
