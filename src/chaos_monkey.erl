@@ -6,6 +6,7 @@
 -behaviour(gen_server).
 
 %% API
+-export([start/0]).
 -export([start_link/0]).
 
 -export([kill/0]).
@@ -17,6 +18,9 @@
 -define(SERVER, ?MODULE). 
 
 -record(state, {}).
+
+start() ->
+    application:start(?MODULE).
 
 start_link() ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, [], []).
