@@ -1,17 +1,23 @@
 This is The CHAOS MONKEY.  It will kill your processes.
 
+"What kills you, makes you stronger" -- The Chaos Monkey
+
 Start by including the chaos_monkey application amongst your
 applications.  The chaos_monkey stays in his cage and eats bananas by
 default.
 
+
 chaos_monkey:find_orphans() -> [Pid]
 
   The Chaos Monkey smell processes and find the ones which don't have
-  the protection of an application.  It gladly hands them over to you.
+  the protection of an application.  It gladly hands them over to you
+  to do with them as you please.
 
 
 chaos_monkey:on() -> ok
 chaos_monkey:off() -> ok
+
+  NOT IMPLEMENTED YET
 
   Asynchronous.
 
@@ -31,7 +37,9 @@ chaos_monkey:havoc(Applications, Protected) -> {ok, NumberOfKilledProcesses}
     Applications :: all | all_but_otp | all_but_deps | [application()]
     Protected :: [pid() | registered_name()]
 
-  Call is synchronous.
+  NOT IMPLEMENTED YET
+
+  Synchronous.
 
   The Chaos Monkey will randomly walk through processes belonging to
   theli st of applications and kill everything a couple of times.
