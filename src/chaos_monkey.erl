@@ -81,17 +81,23 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-kill_something(State = #state{}) ->
-    Pid = random_process(),
+kill_something(State) ->
+    kill_something(State, randomize(erlang:processes())).
+
+kill_something(State, []) ->
+    p("Nothing is killable!", []),
+    State;
+kill_something(State = #state{}, [Pid | Pids]) ->
     App = application:get_application(Pid),
     IsSystemProcess = pman_process:is_system_process(Pid),
     IsSystemApp = lists:member(App, [{ok, kernel}, {ok, chaos_monkey}]),
     IsSupervisor = is_supervisor(Pid),
+    
     case IsSystemProcess orelse IsSystemApp orelse IsSupervisor of
         true ->
             p_pidinfo(false, Pid, App, IsSystemProcess,
                       IsSystemApp, IsSupervisor),
-            kill_something(State);
+            kill_something(State, Pids);
         false ->
             p_pidinfo(true, Pid, App, IsSystemProcess,
                       IsSystemApp, IsSupervisor),
@@ -114,9 +120,12 @@ kill_something(State = #state{}) ->
             State
     end.
 
-random_process() ->
-    Ps = erlang:processes(),
-    lists:nth(random:uniform(length(Ps)), Ps).
+randomize(Xs) ->
+    [V || {_, V} <- lists:sort([{random:uniform(), X} || X <- Xs])].
+
+%% random_process() ->
+%%     Ps = erlang:processes(),
+%%     lists:nth(random:uniform(length(Ps)), Ps).
 
 p_pidinfo(Killable, Pid, App, IsSystemProcess, IsSystemApp, IsSupervisor) ->
     FKillable = case Killable of
