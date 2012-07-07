@@ -73,3 +73,22 @@ about sys:get_status(whereis(chaos_monkey_sup)). before this.  Super.
 I got tricked since I was so certain that supervisor was *not* a
 gen_server.  Which it is of course.  Even though it shouldn't for so
 many reasons.
+
+00:50
+
+I think I don't add usable code any more.  Going home to sleep, and
+think a bit about the design.
+
+10:30
+
+I'm back!
+
+The code is sort of doing what it should.  There is a huge lot of
+improvements that can be made.  I think it's time to write some
+documentation to see
+
+11:13
+
+Still writing documentation about a future dream scenario.  Time to
+accept that it won't ever be perfect, and just go back to coding some
+of those cool features that have just been described.
