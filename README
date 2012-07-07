@@ -7,19 +7,12 @@ Chaos Monkey stays in his cage and eats bananas by default.  Let it
 out by running chaos_monkey:on() or have him kill a single process
 using chaos_monkey:kill().
 
-KNOWN BUGS: The shell is not properly recognized as a system process.
-This leaves two processes for the active shell which can be killed by
-the monkey but which really should be protected.
-
 
 chaos_monkey:find_orphans() -> [Pid]
 
   The Chaos Monkey smell processes and find the ones which don't have
   the protection of an application.  It gladly hands them over to you
   to do with them as you please.
-
-  KNOWN BUGS: The Chaos Monkey is over-eager and also gives you back
-  those two non-system processes which exist for an active shell.
 
 
 chaos_monkey:on() -> {ok, started} | {error, already_running}
@@ -64,13 +57,6 @@ chaos_monkey:havoc(Applications, Protected) ->
 
   System processes and processes belonging to the kernel application
   are always protected, as is chaos_monkey itself.
-
-  %% It doesn't like seafood nor snails, so the shell is also protected
-  %% (NOTE: The Chaos Monkey has a bug and can't recognize shells at the
-  %% moment).
-
-  Processes that don't belong to an application or are not part of a
-  supervision tree are eaten for lunch.
 
   Applications decide which applications are available for killing:
 
