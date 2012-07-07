@@ -283,6 +283,12 @@ do_havoc(Apps, Protected) ->
                                    p("Why is there a supervisor which "
                                      "doesn't belong to an application.  "
                                      "Take a closer look at ~p", [Pid]),
+                                   %% Should I handle this better?
+                                   %% Probably.  Because this will
+                                   %% happen whenever somebody out
+                                   %% there can't be bothered making
+                                   %% proper app files. Which happens
+                                   %% a lot.
                                    N;
                                false ->
                                    kill(Pid),
