@@ -6,12 +6,19 @@ Start by including the chaos_monkey application amongst your
 applications.  The chaos_monkey stays in his cage and eats bananas by
 default.
 
+KNOWN BUGS: The shell is not properly recognized as a system process.
+This leaves two processes for the active shell which can be killed by
+the monkey but which really should be protected.
+
 
 chaos_monkey:find_orphans() -> [Pid]
 
   The Chaos Monkey smell processes and find the ones which don't have
   the protection of an application.  It gladly hands them over to you
   to do with them as you please.
+
+  KNOWN BUGS: The Chaos Monkey is over-eager and also gives you back
+  those two non-system processes which exist for an active shell.
 
 
 chaos_monkey:on() -> {ok, started} | {error, already_running}
