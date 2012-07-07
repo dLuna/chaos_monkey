@@ -337,13 +337,11 @@ is_shell(Pid) ->
     %% calling this function.
     {group_leader, Leader} = erlang:process_info(Pid, group_leader),
     case lists:keyfind(shell, 1, group:interfaces(Leader)) of
+        {shell, Pid} -> true;
         {shell, Shell} ->
-            case Shell =:= Pid of
-                true -> true;
-                false ->
-                    case erlang:process_info(Shell, dictionary) of
-                        {dictionary, Dict} ->
-                            proplists:get_value(evaluator, Dict) =:= Pid
-                    end
-            end
+            case erlang:process_info(Shell, dictionary) of
+                {dictionary, Dict} ->
+                    proplists:get_value(evaluator, Dict) =:= Pid
+            end;
+        false -> false
     end.
