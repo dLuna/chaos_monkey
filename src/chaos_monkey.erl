@@ -233,7 +233,7 @@ is_supervisor(Pid) ->
         end,
     case SortofActualInit of
         {supervisor, _, _} -> true;
-        _ -> p("Init: ~p", [SortofActualInit]), false
+        _ -> false
     end.
     
 p(Format, Data) ->
