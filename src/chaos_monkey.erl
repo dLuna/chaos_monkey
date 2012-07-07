@@ -66,13 +66,11 @@ kill_something(State = #state{}) ->
     IsSystemApp = lists:member(App, [kernel, chaos_monkey]),
     case IsSystemProcess orelse IsSystemApp of
         true ->
-            error_logger:info_msg(
-              "Cannot kill process ~p belonging to ~p (~s)",
-                                  [Pid, App, Name]),
+            p("Cannot kill process ~p belonging to ~p (~s)",
+              [Pid, App, Name]),
             kill_something(State);
         false ->
-            error_logger:info_msg("About to kill ~p from ~p (~s)",
-                                  [Pid, App, Name]),
+            p("About to kill ~p from ~p (~s)", [Pid, App, Name]),
             erlang:monitor(process, Pid),
             exit(Pid, im_killing_you),
             DeathReason =
@@ -86,11 +84,13 @@ kill_something(State = #state{}) ->
                                 Reason
                         end
                 end,
-            error_logger:info_msg("~p died because of ~p",
-                                  [Pid, DeathReason]),
+            p("~p died because of ~p", [Pid, DeathReason]),
             State
     end.
 
 random_process() ->
     Ps = erlang:processes(),
     lists:nth(random:uniform(length(Ps)), Ps).
+
+p(Format, Data) ->
+    io:format(Format, Data).
