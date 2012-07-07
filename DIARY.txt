@@ -28,3 +28,14 @@ Sub acquired.
 Program works.  I can go home.  :-)
 
 Now let's make it a little bit more sophisticated.
+
+22:00
+
+It is fairly sophisticated at killing stuff.  The chaos monkey ignores
+system processes, and will not do suicide.  Everything else is fair
+bait.
+
+Unfortunately it shouldn't really be allowed to kill supervisors,
+because that breaks one of the Rules of Erlang.  Let's see if I can
+identify those.
+
