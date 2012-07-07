@@ -26,7 +26,9 @@
 
 -define(SERVER, ?MODULE). 
 
--record(state, {intervals = []}).
+-record(state, {
+          is_active = false,
+          intervals = []}).
 
 start() ->
     application:start(?MODULE).
@@ -75,14 +77,20 @@ init([]) ->
 handle_call(kill, _From, State) ->
     {NewState, ProcInfo} = kill_something(State),
     {reply, {ok, ProcInfo}, NewState};
-handle_call(on, _From, State) ->
+
+handle_call(on, _From, State = #state{is_active = false}) ->
     TODO_on = throw(nyi),
     NewState = State,
     {reply, ok, NewState};
-handle_call(off, _From, State) ->
+handle_call(off, _From, State = #state{is_active = true}) ->
     TODO_off = throw(nyi),
     NewState = State,
-    {reply, ok, NewState};
+    {reply, {ok, stopped}, NewState};
+handle_call(on, _From, State = #state{is_active = true}) ->
+    {reply, {error, already_running}, State};
+handle_call(off, _From, State = #state{is_active = false}) ->
+    {reply, {error, not_running}, State};
+
 handle_call({kill_ms, Ms}, _From, State) ->
     case timer:send_interval(Ms, kill) of
         {ok, TRef} ->

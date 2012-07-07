@@ -14,8 +14,8 @@ chaos_monkey:find_orphans() -> [Pid]
   to do with them as you please.
 
 
-chaos_monkey:on() -> ok
-chaos_monkey:off() -> ok
+chaos_monkey:on() -> {ok, started} | {error, already_running}
+chaos_monkey:off() -> {ok, stopped} | {error, not_running}
 
   NOT IMPLEMENTED YET
 
