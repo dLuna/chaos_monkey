@@ -23,7 +23,10 @@ chaos_monkey:off() -> {ok, stopped} | {error, not_running}
   running all the time.
 
   It will stay away from system processes, OTP applications, and
-  supervisors like a good monkey.
+  supervisors like a good monkey.  The Chaos Monkey finds one pesky
+  process to kill once every five seconds, on average.  If your
+  restart frequency setting doesn't allow for this then you could be
+  in for a surprise.
 
 
 chaos_monkey:havoc() ->
