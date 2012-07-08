@@ -30,13 +30,10 @@ chaos_monkey:havoc() ->
     {ok, NumberOfKilledProcesses} | {error, Error}
 chaos_monkey:havoc(Applications) ->
     {ok, NumberOfKilledProcesses} | {error, Error}
-chaos_monkey:havoc(Applications, Protected) ->
-    {ok, NumberOfKilledProcesses} | {error, Error}
 
   Types:
 
     Applications :: all | all_but_otp | all_but_deps | [application()]
-    Protected :: [pid() | registered_name()]
     NumberOfKilledProcesses :: non_neg_integer()
     Error :: term()
 
@@ -51,11 +48,9 @@ chaos_monkey:havoc(Applications, Protected) ->
   threshold.  The Chaos Monkey is not suicidal so it will respect
   restart thresholds of permanent top level supervisors.
 
-  As well as not killing supervisors, system processes and processes
+  As well as not killing supervisors; system processes and processes
   in the kernel application are too strong.  As mentioned above The
-  Chaos Monkey is also not suicidal.  On top of this, the caller can
-  specify an optional list of Protected processes.  These can be
-  specified by name or pid.
+  Chaos Monkey is also not suicidal.
 
   The Applications argument, tells The Chaos Monkey to focus its
   killing spree on:
