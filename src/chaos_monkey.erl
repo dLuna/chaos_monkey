@@ -16,8 +16,6 @@
          off/0,
          on/0]).
 
--export([calm/0]).
--export([kill_ms/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -63,12 +61,6 @@ off() ->
 %% END OF EXTERNAL API
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-kill_ms(Ms) ->
-    gen_server:call(?SERVER, {kill_ms, Ms}, infinity).
-
-calm() ->
-    gen_server:call(?SERVER, calm, infinity).
-
 init([]) ->
     random:seed(now()),
     {ok, #state{}}.
@@ -89,18 +81,6 @@ handle_call(on, _From, State = #state{is_active = true}) ->
 handle_call(off, _From, State = #state{is_active = false}) ->
     {reply, {error, not_running}, State};
 
-handle_call({kill_ms, Ms}, _From, State) ->
-    case timer:send_interval(Ms, kill) of
-        {ok, TRef} ->
-            {reply,
-             ok,
-             State#state{intervals = [TRef | State#state.intervals]}};
-        {error, Reason} ->
-            {reply, {error, Reason}, State}
-    end;
-handle_call(calm, _From, State = #state{intervals = Intervals}) ->
-    Cancels = [timer:cancel(Interval) || Interval <- Intervals],
-    {reply, Cancels, State#state{intervals = []}};
 handle_call(_Msg, _From, State) ->
     {reply, {error, unknown_call}, State}.
 
