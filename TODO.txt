@@ -1,0 +1,15 @@
+
+
+%% Counters to be reported to the user:
+%%    #dead already
+%%    sups
+%%    children
+%%    neither sups nor children
+%%    disconnected sups
+%%    total killable with no dead sups
+%%      kill and check status
+%%    total killable with no dead top level sups
+%%      kill and check status
+%%    #Killed
+%%    total number of processes before killing anything
+%%    total number of processes after killing things
