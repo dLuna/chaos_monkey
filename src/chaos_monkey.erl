@@ -400,16 +400,6 @@ app_killer(App, Pids) ->
         "from killing the top level supervisor.",
     0.
 
-%% Copied from supervisor.erl
--record(child, {% pid is undefined when child is not running
-	        pid = undefined,
-		name,
-		mfargs,
-		restart_type,
-		shutdown,
-		child_type,
-		modules = []}).
-
 %% Counters:
 %%    #dead already
 %%    sups
@@ -436,6 +426,16 @@ with_ancestors(Pids) ->
          _ ->
              {Pid, unknown}
      end || Pid <- Pids].
+
+%% Copied from supervisor.erl
+-record(child, {% pid is undefined when child is not running
+	        pid = undefined,
+		name,
+		mfargs,
+		restart_type,
+		shutdown,
+		child_type,
+		modules = []}).
 
 supervision_state(Pid) ->
     try sys:get_status(Pid) of
