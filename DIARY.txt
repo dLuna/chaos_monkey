@@ -270,3 +270,9 @@ the user can pick which applications to harass.
 
 I'm not sure I dare adding more features.  It would be silly to have a
 broken application in there when the bell rings.
+
+144 commits, 510 lines of chaos_monkey (excluding _app, _sup, and
+app.src), 98 lines of README, 47 lines of INSTALL, and 279 lines of
+diary.  Lots of features.  Heaps of fun.
+
+All in all, two good days of awesome.
