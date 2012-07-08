@@ -123,11 +123,17 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 handle_info(kill_something, State = #state{avg_wait = AvgWait}) ->
-    {NewState, _Info} = kill_something(State),
+    case tagged_processes_from(all_but_otp) of
+        [] -> {error, no_killable_processes};
+        Processes ->
+            {App, Pid} = random(Processes),
+            Reason = kill(Pid),
+            p("Killed ~p", [{Pid, App, Reason}])
+    end,
     Var = 0.3, %% I.e. 70% to 130% of Waittime
     WaitTime = round(AvgWait * ((1 - Var) + (Var * 2 * random:uniform()))),
     {ok, Ref} = timer:send_after(WaitTime, kill_something),
-    {noreply, NewState#state{timer_ref = Ref}};
+    {noreply, State#state{timer_ref = Ref}};
 handle_info(kill, State) ->
     NewState = kill_something(State),
     {noreply, NewState};
