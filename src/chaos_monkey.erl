@@ -125,46 +125,6 @@ randomize(Xs) ->
 %% random(L) ->
 %%     lists:nth(random:uniform(length(L)), L).
 
-%% p_pidinfo(Killable, Pid, App, IsSystemProcess, IsSystemApp, IsSupervisor) ->
-%%     FKillable = case Killable of
-%%                     true -> "About to";
-%%                     false -> "Cannot"
-%%                 end,
-%%     FName = case erlang:process_info(Pid, registered_name) of
-%%                 {registered_name, Name} ->
-%%                     io_lib:format(" (~s)", [Name]);
-%%                 "" -> ""
-%%             end,
-%%     FApp = case App of
-%%                undefined -> "";
-%%                {ok, A} -> io_lib:format(" in app ~s", [A])
-%%            end,
-%%     Immunities =
-%%         [case IsSystemProcess of
-%%              true -> " is a system process";
-%%              false -> no
-%%          end,
-%%          case IsSystemApp of
-%%              true -> " belongs to a system app";
-%%              false -> no
-%%          end,
-%%          case IsSupervisor of
-%%              true -> " is a supervisor";
-%%              false -> no
-%%          end],
-%%     FImmunities =
-%%         case lists:filter(fun(X) -> X =/= no end, Immunities) of
-%%             [] -> "";
-%%             Imms ->
-%%                 [" because it", string:join(Imms, " and")]
-%%         end,
-%%     case (App =:= undefined) orelse (Killable =:= true) of
-%%         true ->
-%%             p("~s kill ~p~s~s~s.", [FKillable, Pid, FName, FApp, FImmunities]);
-%%         false ->
-%%             ok
-%%     end.
-
 is_supervisor(Pid) ->
     %% inspired by pman_process:is_system_process2/1 which seems
     %% cleaner somehow to just grabbing the info from the process_info

@@ -1,5 +1,4 @@
 
-
 %% Counters to be reported to the user:
 %%    #dead already
 %%    sups
@@ -13,3 +12,49 @@
 %%    #Killed
 %%    total number of processes before killing anything
 %%    total number of processes after killing things
+
+
+The following can be used to print info about processes and should
+somehow be brough into line with what chaos_monkey:kill/0 returns.
+And the other way around obviously, probably adding a pp_procdata or
+whatnot.
+
+%% p_pidinfo(Killable, Pid, App, IsSystemProcess, IsSystemApp, IsSupervisor) ->
+%%     FKillable = case Killable of
+%%                     true -> "About to";
+%%                     false -> "Cannot"
+%%                 end,
+%%     FName = case erlang:process_info(Pid, registered_name) of
+%%                 {registered_name, Name} ->
+%%                     io_lib:format(" (~s)", [Name]);
+%%                 "" -> ""
+%%             end,
+%%     FApp = case App of
+%%                undefined -> "";
+%%                {ok, A} -> io_lib:format(" in app ~s", [A])
+%%            end,
+%%     Immunities =
+%%         [case IsSystemProcess of
+%%              true -> " is a system process";
+%%              false -> no
+%%          end,
+%%          case IsSystemApp of
+%%              true -> " belongs to a system app";
+%%              false -> no
+%%          end,
+%%          case IsSupervisor of
+%%              true -> " is a supervisor";
+%%              false -> no
+%%          end],
+%%     FImmunities =
+%%         case lists:filter(fun(X) -> X =/= no end, Immunities) of
+%%             [] -> "";
+%%             Imms ->
+%%                 [" because it", string:join(Imms, " and")]
+%%         end,
+%%     case (App =:= undefined) orelse (Killable =:= true) of
+%%         true ->
+%%             p("~s kill ~p~s~s~s.", [FKillable, Pid, FName, FApp, FImmunities]);
+%%         false ->
+%%             ok
+%%     end.
