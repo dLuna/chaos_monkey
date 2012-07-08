@@ -184,3 +184,9 @@ The good thing with working alone is that when a commit doesn't
 compile, nobody complains.  Took me 25 lines and five minutes to have
 it compiling again.  I hope it works too...
 
+01:45
+
+Major code improvements.  Not really moving closer to the goal, but
+the code *looks* much nicer.
+
+
