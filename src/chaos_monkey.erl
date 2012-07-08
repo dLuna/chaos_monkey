@@ -10,8 +10,8 @@
 -export([start_link/0]).
 
 -export([find_orphans/0,
-         havoc/0,
-         havoc/1,
+         almost_kill/0,
+         almost_kill/1,
          kill/0,
          off/0,
          on/0]).
@@ -46,11 +46,11 @@ start_link() ->
 find_orphans() ->
     do_find_orphans().
 
-havoc() ->
-    havoc(all_but_otp).
+almost_kill() ->
+    do_almost_kill(all_but_otp).
 
-havoc(Apps) ->
-    do_havoc(Apps).
+almost_kill(Apps) ->
+    do_almost_kill(Apps).
 
 kill() ->
     do_kill().
@@ -270,7 +270,7 @@ do_find_orphans() ->
                      end;
                 (_) -> false end, Ps).
 
-do_havoc(AppFilter) ->
+do_almost_kill(AppFilter) ->
     All = [{case application:get_application(P) of
                 {ok, App} -> App; %% No apps named undefined, please!
                 undefined -> undefined
