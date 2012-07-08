@@ -124,7 +124,7 @@ handle_cast(_Msg, State) ->
 
 handle_info(kill_something, State = #state{avg_wait = AvgWait}) ->
     case tagged_processes_from(all_but_otp) of
-        [] -> {error, no_killable_processes};
+        [] -> p("Warning: no killable processes.", []);
         Processes ->
             {App, Pid} = random(Processes),
             Reason = kill(Pid),
