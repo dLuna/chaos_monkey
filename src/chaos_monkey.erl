@@ -270,13 +270,20 @@ do_find_orphans() ->
                      end;
                 (_) -> false end, Ps).
 
-do_havoc(Apps) ->
-    AppProcess = tagged_processes_from(Apps),
+do_havoc(AppFilter) ->
+    All = [{case application:get_application(P) of
+                {ok, App} -> App; %% No apps named undefined, please!
+                undefined -> undefined
+            end, P} || P <- erlang:processes()],
+    TaggedProcesses =
+        lists:filter(fun({App, Pid}) ->
+                             is_killable(Pid, App, AppFilter, false)
+                     end, All),
     ByApp = lists:foldl(fun({App, P}, [{App, Ps} | Acc]) ->
                                 [{App, [P | Ps]} | Acc];
                            ({App, P}, Acc) ->
                                 [{App, [P]} | Acc]
-                        end, [], lists:sort(AppProcess)),
+                        end, [], lists:sort(TaggedProcesses)),
     %% Start off by killing everything which doesn't belong to an app
     {N0, Ps1} =
         case lists:keytake(undefined, 1, ByApp) of
@@ -321,15 +328,6 @@ do_havoc(Apps) ->
          otp_mibs, parsetools, percept, pman, public_key, reltool,
          runtime_tools, sasl, snmp, ssh, ssl, stdlib, syntax_tools,
          test_server, toolbar, tools, tv, typer, webtool, wx, xmerl]).
-
-tagged_processes_from(AppFilter) ->
-    All = [{case application:get_application(P) of
-                {ok, App} -> App; %% No apps named undefined, please!
-                undefined -> undefined
-            end, P} || P <- erlang:processes()],
-    lists:filter(fun({App, Pid}) ->
-                         is_killable(Pid, App, AppFilter, false)
-                 end, All).
 
 is_killable(Pid, App) ->
     is_killable(Pid, App, all_but_otp, true).
