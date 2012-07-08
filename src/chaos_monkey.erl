@@ -414,18 +414,18 @@ app_killer(App, Pids) ->
 %%    total number of processes before killing anything
 %%    total number of processes after killing things
 
-with_ancestors(Pids) ->
-    [case erlang:process_info(Pid, dictionary) of
-         {dictionary, PDict} ->
-             case lists:keyfind('$ancestors', 1, PDict) of
-                 {'$ancestors', [Ancestor | _Ancestors]} ->
-                     {Pid, Ancestor};
-                 _ ->
-                     {Pid, unknown}
-             end;
-         _ ->
-             {Pid, unknown}
-     end || Pid <- Pids].
+%% with_ancestors(Pids) ->
+%%     [case erlang:process_info(Pid, dictionary) of
+%%          {dictionary, PDict} ->
+%%              case lists:keyfind('$ancestors', 1, PDict) of
+%%                  {'$ancestors', [Ancestor | _Ancestors]} ->
+%%                      {Pid, Ancestor};
+%%                  _ ->
+%%                      {Pid, unknown}
+%%              end;
+%%          _ ->
+%%              {Pid, unknown}
+%%      end || Pid <- Pids].
 
 %% Copied from supervisor.erl
 -record(child, {% pid is undefined when child is not running
