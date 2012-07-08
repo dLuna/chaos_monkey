@@ -178,3 +178,9 @@ minor havoc.  More will have to wait until later.
 Anderson Silva kept his belt.  And I got to eat spare ribs.  Everyone
 is happy.
 
+01:13
+
+The good thing with working alone is that when a commit doesn't
+compile, nobody complains.  Took me 25 lines and five minutes to have
+it compiling again.  I hope it works too...
+
