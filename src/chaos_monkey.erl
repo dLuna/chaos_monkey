@@ -410,7 +410,8 @@ app_killer(App, Pids) ->
                   "point in the future it will pick the right one and kill"
                   "the others.  Hand in a feature request", [App]),
                 TODO_multi_tree = "Look at '$ancestors' to find the "
-                    "*real* supervision tree.",
+                    "*real* supervision tree.  Easy to do but we are under "
+                    "a deadline here...",
                 {Single, 0}
         end,
 
