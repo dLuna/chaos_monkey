@@ -140,78 +140,78 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-kill_something(State) ->
-    kill_something(State, randomize(erlang:processes())).
+%% kill_something(State) ->
+%%     kill_something(State, randomize(erlang:processes())).
 
-kill_something(State, []) ->
-    p("Nothing is killable!", []),
-    {State, []};
-kill_something(State = #state{}, [Pid | Pids]) ->
-    App = application:get_application(Pid),
-    IsSystemProcess = pman_process:is_system_process(Pid),
-    IsSystemApp = lists:member(App, [{ok, kernel}, {ok, chaos_monkey}]),
-    IsSupervisor = is_supervisor(Pid),
+%% kill_something(State, []) ->
+%%     p("Nothing is killable!", []),
+%%     {State, []};
+%% kill_something(State = #state{}, [Pid | Pids]) ->
+%%     App = application:get_application(Pid),
+%%     IsSystemProcess = pman_process:is_system_process(Pid),
+%%     IsSystemApp = lists:member(App, [{ok, kernel}, {ok, chaos_monkey}]),
+%%     IsSupervisor = is_supervisor(Pid),
     
-    case IsSystemProcess orelse IsSystemApp orelse IsSupervisor of
-        true ->
-            p_pidinfo(false, Pid, App, IsSystemProcess,
-                      IsSystemApp, IsSupervisor),
-            kill_something(State, Pids);
-        false ->
-            p_pidinfo(true, Pid, App, IsSystemProcess,
-                      IsSystemApp, IsSupervisor),
-            Info = erlang:process_info(Pid),
-            p("~p", [Info]),
-            DeathReason = kill(Pid),
-            p("~p died because of ~p", [Pid, DeathReason]),
-            {State, App}
-    end.
+%%     case IsSystemProcess orelse IsSystemApp orelse IsSupervisor of
+%%         true ->
+%%             p_pidinfo(false, Pid, App, IsSystemProcess,
+%%                       IsSystemApp, IsSupervisor),
+%%             kill_something(State, Pids);
+%%         false ->
+%%             p_pidinfo(true, Pid, App, IsSystemProcess,
+%%                       IsSystemApp, IsSupervisor),
+%%             Info = erlang:process_info(Pid),
+%%             p("~p", [Info]),
+%%             DeathReason = kill(Pid),
+%%             p("~p died because of ~p", [Pid, DeathReason]),
+%%             {State, App}
+%%     end.
 
 randomize(Xs) ->
     [V || {_, V} <- lists:sort([{random:uniform(), X} || X <- Xs])].
 
-random(L) ->
-    lists:nth(random:uniform(length(L)), L).
+%% random(L) ->
+%%     lists:nth(random:uniform(length(L)), L).
 
-p_pidinfo(Killable, Pid, App, IsSystemProcess, IsSystemApp, IsSupervisor) ->
-    FKillable = case Killable of
-                    true -> "About to";
-                    false -> "Cannot"
-                end,
-    FName = case erlang:process_info(Pid, registered_name) of
-                {registered_name, Name} ->
-                    io_lib:format(" (~s)", [Name]);
-                "" -> ""
-            end,
-    FApp = case App of
-               undefined -> "";
-               {ok, A} -> io_lib:format(" in app ~s", [A])
-           end,
-    Immunities =
-        [case IsSystemProcess of
-             true -> " is a system process";
-             false -> no
-         end,
-         case IsSystemApp of
-             true -> " belongs to a system app";
-             false -> no
-         end,
-         case IsSupervisor of
-             true -> " is a supervisor";
-             false -> no
-         end],
-    FImmunities =
-        case lists:filter(fun(X) -> X =/= no end, Immunities) of
-            [] -> "";
-            Imms ->
-                [" because it", string:join(Imms, " and")]
-        end,
-    case (App =:= undefined) orelse (Killable =:= true) of
-        true ->
-            p("~s kill ~p~s~s~s.", [FKillable, Pid, FName, FApp, FImmunities]);
-        false ->
-            ok
-    end.
+%% p_pidinfo(Killable, Pid, App, IsSystemProcess, IsSystemApp, IsSupervisor) ->
+%%     FKillable = case Killable of
+%%                     true -> "About to";
+%%                     false -> "Cannot"
+%%                 end,
+%%     FName = case erlang:process_info(Pid, registered_name) of
+%%                 {registered_name, Name} ->
+%%                     io_lib:format(" (~s)", [Name]);
+%%                 "" -> ""
+%%             end,
+%%     FApp = case App of
+%%                undefined -> "";
+%%                {ok, A} -> io_lib:format(" in app ~s", [A])
+%%            end,
+%%     Immunities =
+%%         [case IsSystemProcess of
+%%              true -> " is a system process";
+%%              false -> no
+%%          end,
+%%          case IsSystemApp of
+%%              true -> " belongs to a system app";
+%%              false -> no
+%%          end,
+%%          case IsSupervisor of
+%%              true -> " is a supervisor";
+%%              false -> no
+%%          end],
+%%     FImmunities =
+%%         case lists:filter(fun(X) -> X =/= no end, Immunities) of
+%%             [] -> "";
+%%             Imms ->
+%%                 [" because it", string:join(Imms, " and")]
+%%         end,
+%%     case (App =:= undefined) orelse (Killable =:= true) of
+%%         true ->
+%%             p("~s kill ~p~s~s~s.", [FKillable, Pid, FName, FApp, FImmunities]);
+%%         false ->
+%%             ok
+%%     end.
 
 is_supervisor(Pid) ->
     %% inspired by pman_process:is_system_process2/1 which seems
