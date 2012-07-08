@@ -236,3 +236,10 @@ die.
 17:20
 
 Better to keep the TODO list in a TODO file. 
+
+17:44
+
+Killing 23 processes in cowboy.  My system tells me everything goes
+down at 23, but that it probably survives 22.  Why doesn't this
+happen?
+
