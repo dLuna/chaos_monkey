@@ -20,6 +20,7 @@ chaos_monkey:off() -> {ok, stopped} | {error, not_running}
   It will stay away from system processes and supervisors like a good
   monkey.
 
+
 chaos_monkey:havoc() ->
     {ok, NumberOfKilledProcesses} | {error, Error}
 chaos_monkey:havoc(Applications) ->
