@@ -502,6 +502,11 @@ make_tree([{Node, Children} | SupStates], OtherPids, Completed) ->
 
 make_tree([], SupStates, OtherPids, Completed, Node) ->
     Sorted = lists:sort(fun(#node{will_die_at = D1},
+                            %% TODO: check that this comparison is in
+                            %% the right direction.  I don't have a
+                            %% good test case and am too tired to do
+                            %% it by thinking.  Deadline moving
+                            %% closer...
                             #node{will_die_at = D2}) -> D1 > D2
                         end, Node#node.child_data),
     WillDieAt =
