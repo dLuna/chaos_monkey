@@ -386,11 +386,10 @@ kill(Pid) ->
 
 app_killer(App, Pids) ->
     {Sups, Other} = lists:partition(fun(Pid) -> is_supervisor(Pid) end, Pids),
-    
-    WithA = with_ancestors(Pids),
-    p("WithA: ~p", [WithA]),
     SupStates = [supervision_state(Pid) || Pid <- Sups],
     p("SupSt: ~p", [SupStates]),
+    Tree = make_tree(SupStates, Other),
+    p("Tree: ~p", [Tree]),
     
     p("Sups: ~p, Other: ~p", [Sups, Other]),
     %% [io:format("~p: ~p~n", [Pid, erlang:process_info(Pid)]) || Pid <- Sups],
@@ -437,6 +436,12 @@ app_killer(App, Pids) ->
 		child_type,
 		modules = []}).
 
+-record(node,
+        {pid,
+         intensity,
+         period,
+         child_data = []}).
+
 supervision_state(Pid) ->
     try sys:get_status(Pid) of
         %% from sys.erl
@@ -448,11 +453,74 @@ supervision_state(Pid) ->
             {state, _Name, _Strategy, Children, _Dynamics, Intensity,
              Period, _Restarts, _Module, _Args} = State,
             ChildPids = [CPid || #child{pid = CPid} <- Children],
-            {Pid, ChildPids, Intensity, Period}
+            {#node{pid = Pid,
+                   intensity = Intensity,
+                   period = Period}, ChildPids}
     catch
         exit:timeout ->
             throw({supervisor_died_before_we_could_query_it,
                    report_this_as_a_bug_or_just_rerun_the_command})
+    end.
+
+make_tree(SupStates, OtherPids) ->
+    make_tree(SupStates, OtherPids, []).
+
+make_tree([], Orphans, Tree) ->
+    {Orphans, Tree};
+make_tree([{Node, Children} | SupStates], OtherPids, Completed) ->
+    {NewSupStates, NewOtherPids, NewCompleted, NewNode} =
+        make_tree(Children, SupStates, OtherPids, Completed, Node),
+    make_tree(NewSupStates, NewOtherPids, [NewNode | NewCompleted]).
+
+make_tree([], SupStates, OtherPids, Completed, Node) ->
+    {SupStates, OtherPids, Completed, Node};
+make_tree([ChildPid | ChildPids],
+          SupStates,
+          OtherPids,
+          Completed,
+          Node) ->
+    case lists:keytake(ChildPid, 1, SupStates) of
+        {value, {ChildPid, {Node, ChildChildren}}, NewSupStates} ->
+            {NewNewSupStates, NewOtherPids, NewCompleted, Child} =
+                make_tree(ChildChildren,
+                          NewSupStates,
+                          OtherPids,
+                          Completed,
+                          Node),
+            make_tree(ChildPids,
+                      NewNewSupStates,
+                      NewOtherPids,
+                      NewCompleted,
+                      Node#node{child_data = [Child | Node#node.child_data]});
+        false ->
+            case lists:splitwith(fun(X) -> X =/= ChildPid end, OtherPids) of
+                {Pre, [ChildPid | Post]} ->
+                    make_tree(ChildPids,
+                              SupStates,
+                              Pre ++ Post,
+                              Completed,
+                              Node#node{
+                                child_data = [ChildPid |
+                                              Node#node.child_data]});
+                {_, []} ->
+                    case lists:keytake(ChildPid, #node.pid, Completed) of
+                        {value, CompletedChild, NewCompleted} ->
+                            make_tree(ChildPids,
+                                      SupStates,
+                                      OtherPids,
+                                      NewCompleted,
+                                      Node#node{
+                                        child_data = [CompletedChild |
+                                                      Node#node.child_data]});
+                        false ->
+                            p("Missing child ~p, ignoring", [ChildPid]),
+                            make_tree(ChildPids,
+                                      SupStates,
+                                      OtherPids,
+                                      Completed,
+                                      Node)
+                    end
+            end
     end.
 
 do_kill() ->
