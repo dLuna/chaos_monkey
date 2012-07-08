@@ -90,7 +90,7 @@ chaos_monkey:kill() -> {ok, ProcData}.
 
 chaos_monkey:find_orphans() -> [Pid]
 
-  The Chaos Monkey smell processes and find the ones which don't have
-  the protection of an application.  It gladly hands them over to you
-  to do with them as you please.  A well-behaved system should return
+  The Chaos Monkey will smell your processes and find the ones which
+  lack protection from an application.  It gladly hands them over to
+  you to do with as you please.  A well-behaved system should return
   [] when calling this function.
