@@ -250,3 +250,9 @@ FIXED!
 
 And with zero lines of code (ok, so maybe ten lines of debug printout,
 but who's counting).
+
+18:08
+
+I'm done!
+
+Major cleanup coming up.
