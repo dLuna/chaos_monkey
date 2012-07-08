@@ -387,17 +387,39 @@ kill(Pid) ->
 app_killer(App, Pids) ->
     {Sups, Other} = lists:partition(fun(Pid) -> is_supervisor(Pid) end, Pids),
     SupStates = [supervision_state(Pid) || Pid <- Sups],
-    p("SupSt: ~p", [SupStates]),
-    Tree = make_tree(SupStates, Other),
+    {Orphans, Tree} = make_tree(SupStates, Other),
+    KilledOrphans =
+        case Orphans =:= [] of
+            true -> 0;
+            false ->
+                p("There are processes in ~s which don't belong to a "
+                  "supervision tree.  The Chaos Monkey stomps on them.",
+                  [App]),
+                [kill(Pid) || Pid <- Orphans],
+                length(Orphans)
+        end,
+    {RealTree, KilledTrees} =
+        case Tree of
+            [Single] ->
+                {Single, 0};
+            [Single | _] ->
+                %% p("There is an orphan supervision tree in ~p.  The Chaos "
+                %%   "Monkey hits all of their children", [App]),
+                p("There are multiple top level supervision trees for ~p.  "
+                  "The Chaos Money picks one randomly to harass.  At some"
+                  "point in the future it will pick the right one and kill"
+                  "the others.  Hand in a feature request", [App]),
+                TODO_multi_tree = "Look at '$ancestors' to find the "
+                    "*real* supervision tree.",
+                {Single, 0}
+        end,
+
     p("Tree: ~p", [Tree]),
-    
-    p("Sups: ~p, Other: ~p", [Sups, Other]),
-    %% [io:format("~p: ~p~n", [Pid, erlang:process_info(Pid)]) || Pid <- Sups],
-    
+    p("SupSt: ~p", [SupStates]),
     TODO = "find supervisors, and build up the tree.  Kill enough "
         "children that the supervisors start to die.  Stay away "
         "from killing the top level supervisor.",
-    0.
+    KilledOrphans + KilledTrees.
 
 %% Counters:
 %%    #dead already
