@@ -58,13 +58,7 @@ havoc(Apps, Protected) ->
     do_havoc(Apps, Protected).
 
 kill() ->
-    case tagged_processes_from(all_but_otp) of
-        [] -> {error, no_killable_processes};
-        Processes ->
-            {App, Pid} = random(Processes),
-            Reason = kill(Pid),
-            {ok, {App, Reason}}
-    end.
+    do_kill().
 
 on() ->
     gen_server:call(?SERVER, on, infinity).
@@ -123,20 +117,24 @@ handle_cast(_Msg, State) ->
     {noreply, State}.
 
 handle_info(kill_something, State = #state{avg_wait = AvgWait}) ->
-    case tagged_processes_from(all_but_otp) of
-        [] -> p("Warning: no killable processes.", []);
-        Processes ->
-            {App, Pid} = random(Processes),
-            Reason = kill(Pid),
-            p("Killed ~p", [{Pid, App, Reason}])
+    case do_kill() of
+        {ok, KilledInfo} ->
+            p("Killed ~p", [KilledInfo]);
+        {error, no_killable_processes} ->
+            p("Warning: no killable processes.", [])
     end,
     Var = 0.3, %% I.e. 70% to 130% of Waittime
     WaitTime = round(AvgWait * ((1 - Var) + (Var * 2 * random:uniform()))),
     {ok, Ref} = timer:send_after(WaitTime, kill_something),
     {noreply, State#state{timer_ref = Ref}};
 handle_info(kill, State) ->
-    NewState = kill_something(State),
-    {noreply, NewState};
+    case do_kill() of
+        {ok, KilledInfo} ->
+            p("Killed ~p", [KilledInfo]);
+        {error, no_killable_processes} ->
+            p("Warning: no killable processes.", [])
+    end,
+    {noreply, State};
 handle_info(Info, State) ->
     p("Unknown info ~p", [Info]),
     {noreply, State}.
@@ -335,10 +333,14 @@ tagged_processes_from(AppFilter) ->
                 undefined -> undefined
             end, P} || P <- erlang:processes()],
     lists:filter(fun({App, Pid}) ->
-                         is_maybe_killable(Pid, App, AppFilter)
+                         is_killable(Pid, App, AppFilter, false)
                  end, All).
 
-is_maybe_killable(Pid, App, AppFilter) when is_pid(Pid), is_atom(App) ->
+is_killable(Pid, App) ->
+    is_killable(Pid, App, all_but_otp, true).
+
+is_killable(Pid, App, AppFilter, IsSupervisorKillable)
+  when is_pid(Pid), is_atom(App), is_boolean(IsSupervisorKillable) ->
     (App =:= undefined
      orelse
      case AppFilter of
@@ -351,7 +353,11 @@ is_maybe_killable(Pid, App, AppFilter) when is_pid(Pid), is_atom(App) ->
         andalso
         not(pman_process:is_system_process(Pid))
         andalso
-        not(is_shell(Pid)).
+        not(is_shell(Pid))
+        andalso
+        (IsSupervisorKillable
+         orelse
+         not(is_supervisor(Pid))).
 
 %% Theoretically pman_process:is_system_process/1 should say true for
 %% the shell.  Well, it doesn't, so this is a workaround until it
@@ -390,3 +396,17 @@ app_killer(_Pids) ->
         "children that the supervisors start to die.  Stay away "
         "from killing the top level supervisor.",
     0.
+
+do_kill() ->
+    do_kill_one(randomize(erlang:processes())).
+
+do_kill_one([]) -> {error, no_killable_processes};
+do_kill_one([Pid | Pids]) ->
+    App = case application:get_application(Pid) of
+              {ok, A} -> A; %% No apps named undefined, please!
+              undefined -> undefined
+          end,
+    case is_killable(Pid, App) of
+        true -> {ok, {Pid, App, kill(Pid)}};
+        false -> do_kill_one(Pids)
+    end.
