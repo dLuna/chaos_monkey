@@ -1,0 +1,46 @@
+The simplest way is
+
+make
+
+or
+
+./rebar compile
+
+It also works cleanly if you include it as a dependency in rebar.
+
+To test, find yourself a project, include the path to the code, run
+application:start(chaos_monkey), and then run chaos_monkey:on() or
+chaos_monkey:kill(), to kill over time or kill a single time
+respectively.  You can also test the stability of a single application
+using chaos_monkey:havoc([AppName]).
+
+I've personally been using cowboy_examples for testing.  Just because
+installation was so extremely quick.  If your current working
+directory is chaos_monkey, then do:
+
+cd ..
+git clone https://github.com/extend/cowboy_examples.git
+make
+
+Add "-pa ../chaos_monkey/ebin -s chaos_monkey \" as the third line in
+start.sh (see below for diff).
+
+You can now run The Chaos Monkey according to the documentation in
+README.  Note that cowboy_examples have temporary applications so over
+time you will kill it off and The Chaos Monkey will have nothing to
+do.
+
+Happy killing.
+
+
+diff --git a/start.sh b/start.sh
+index d704f86..0a3c226 100755
+--- a/start.sh
++++ b/start.sh
+@@ -1,5 +1,6 @@
+ #!/bin/sh
+ erl -sname cowboy_examples -pa ebin -pa deps/*/ebin -s cowboy_examples \
++       -pa ../chaos_monkey/ebin -s chaos_monkey \
+        -eval "io:format(\"~n~nThe following examples are available:~n\")." \
+        -eval "io:format(\"* Hello world: http://localhost:8080~n\")." \
+        -eval "io:format(\"* Websockets: http://localhost:8080/websocket~n\")." \
