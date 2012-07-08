@@ -352,6 +352,25 @@ tagged_processes_from(IsIncludedF) when is_function(IsIncludedF, 1) ->
                   not(is_shell(P))
       end, All).
 
+is_maybe_killable(Pid, Filter) ->
+    App = case application:get_application(Pid) of
+              {ok, A} -> A; %% No apps named undefined, please!
+              undefined -> undefined
+          end,
+    (App =:= undefined
+     orelse
+     case Filter of
+         all -> true;
+         all_but_otp -> not(lists:member(App, ?OTP_APPS));
+         Apps when is_list(Apps) -> lists:member(App, Apps)
+     end) 
+        andalso
+        not(lists:member(App, [kernel, chaos_monkey]))
+        andalso
+        not(pman_process:is_system_process(Pid))
+        andalso
+        not(is_shell(Pid)).
+
 %% Theoretically pman_process:is_system_process/1 should say true for
 %% the shell.  Well, it doesn't, so this is a workaround until it
 %% does.
