@@ -25,8 +25,6 @@ chaos_monkey:off() -> {ok, stopped} | {error, not_running}
     Opts :: [Opt]
     Opt :: {ms, non_neg_integer()}
 
-  Asynchronous.
-
   Will let The Chaos Monkey wreck reasonable havoc over time on your
   system.  This is the command to use if you want The Chaos Monkey
   running all the time.
