@@ -384,6 +384,14 @@ kill(Pid) ->
             end
     end.
 
+-record(node,
+        {pid,
+         type,
+         will_die_at = 1,
+         intensity,
+         period,
+         child_data = []}).
+
 app_killer(App, Pids) ->
     {Sups, Other} = lists:partition(fun(Pid) -> is_supervisor(Pid) end, Pids),
     SupStates = [supervision_state(Pid) || Pid <- Sups],
@@ -414,7 +422,9 @@ app_killer(App, Pids) ->
                     "a deadline here...",
                 {Single, 0}
         end,
-
+    p("Supervision tree for ~p will go down at death ~p if The Chaos "
+      "Monkey kills it in the right order.",
+      [App, RealTree#node.will_die_at]),
     p("Tree: ~p", [Tree]),
     p("SupSt: ~p", [SupStates]),
     TODO = "find supervisors, and build up the tree.  Kill enough "
@@ -459,13 +469,6 @@ app_killer(App, Pids) ->
 		child_type,
 		modules = []}).
 
--record(node,
-        {pid,
-         type,
-         intensity,
-         period,
-         child_data = []}).
-
 supervision_state(Pid) ->
     try sys:get_status(Pid) of
         %% from sys.erl
@@ -498,7 +501,14 @@ make_tree([{Node, Children} | SupStates], OtherPids, Completed) ->
     make_tree(NewSupStates, NewOtherPids, [NewNode | NewCompleted]).
 
 make_tree([], SupStates, OtherPids, Completed, Node) ->
-    {SupStates, OtherPids, Completed, Node};
+    Sorted = lists:sort(fun(#node{will_die_at = D1},
+                            #node{will_die_at = D2}) -> D1 > D2
+                        end, Node#node.child_data),
+    WillDieAt =
+        lists:sum(lists:sublist([N#node.will_die_at || N <- Sorted],
+                                Node#node.intensity)),
+    {SupStates, OtherPids, Completed, Node#node{will_die_at = WillDieAt,
+                                                child_data = Sorted}};
 make_tree([ChildPid | ChildPids],
           SupStates,
           OtherPids,
