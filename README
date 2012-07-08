@@ -47,7 +47,7 @@ chaos_monkey:havoc(Applications) ->
   The Chaos Monkey will randomly walk through processes belonging to
   the list of applications and kill everything a couple of times.
   Supervisors are too strong for The Chaos Monkey, so it will kill
-  their children instead aiming to kill by going above the restart
+  their children instead, aiming to kill by going above the restart
   threshold.  The Chaos Monkey is not suicidal so it will respect
   restart thresholds of permanent top level supervisors.
 
