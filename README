@@ -24,18 +24,19 @@ chaos_monkey:off() -> {ok, stopped} | {error, not_running}
 
     Opts :: [Opt]
     Opt :: {ms, non_neg_integer()}
+         | {apps, all | all_but_otp | [atom()]}
 
   Will let The Chaos Monkey wreck reasonable havoc over time on your
   system.  This is the command to use if you want The Chaos Monkey
   running all the time.
 
-  It will stay away from system processes, OTP applications, and
-  supervisors like a good monkey.
+  It will stay away from system processes and supervisors like a good
+  monkey.
 
-  Opts default to [{ms, 5000}] which allows The Chaos Monkey to kill
-  one process every five seconds on average.  It can deviate from this
-  number by 30%.  If your restart frequency setting doesn't allow for
-  this then you could be in for a surprise.
+  Opts default to [{ms, 5000}, {apps, all_but_otp}] which allows The
+  Chaos Monkey to kill one process every five seconds on average.  It
+  can deviate from this number by 30%.  If your restart frequency
+  setting doesn't allow for this then you could be in for a surprise.
 
 
 chaos_monkey:almost_kill() ->

@@ -24,11 +24,15 @@
 -define(SERVER, ?MODULE). 
 
 -define(TIMER, 5000).
+-define(DEFAULT_OPTS,
+        [{ms, ?TIMER},
+         {apps, all_but_otp}]).
 
 -record(state, {
           is_active = false,
           avg_wait,
           timer_ref,
+          apps,
           intervals = []}).
 
 start() ->
@@ -50,13 +54,13 @@ almost_kill(Apps) ->
     do_almost_kill(Apps).
 
 kill() ->
-    do_kill().
+    do_kill(all_but_otp).
 
 on() ->
-    gen_server:call(?SERVER, {on, [{ms, ?TIMER}]}, infinity).
+    gen_server:call(?SERVER, {on, ?DEFAULT_OPTS}, infinity).
 
 on(Opts) ->
-    gen_server:call(?SERVER, {on, Opts}, infinity).
+    gen_server:call(?SERVER, {on, Opts ++ ?DEFAULT_OPTS}, infinity).
 
 off() ->
     gen_server:call(?SERVER, off, infinity).
@@ -69,13 +73,28 @@ init([]) ->
     {ok, #state{}}.
 
 handle_call({on, Opts}, _From, State = #state{is_active = false}) ->
-    try lists:keyfind(ms, 1, Opts) of
-        {ms, Ms} when is_integer(Ms), Ms >= 0 ->
-            NewState = State#state{avg_wait = Ms, is_active = true},
-            self() ! kill_something,
-            {reply, {ok, started}, NewState};
-        _ ->
-            {reply, {error, badarg}, State}
+    try case lists:keyfind(ms, 1, Opts) of
+            {ms, Ms} when is_integer(Ms), Ms >= 0 ->
+                case lists:keyfind(apps, 1, Opts) of
+                    {apps, Apps} ->
+                        case Apps =:= all
+                            orelse Apps =:= all_but_otp 
+                            orelse lists:all(fun(X) -> is_atom(X) end, Apps) of
+                            true ->
+                                NewState = State#state{avg_wait = Ms,
+                                                       apps = Apps,
+                                                       is_active = true},
+                                self() ! kill_something,
+                                {reply, {ok, started}, NewState};
+                            false ->
+                                {reply, {error, badarg}, State}
+                        end;
+                    _ ->
+                        {reply, {error, badarg}, State}
+                end;
+            _ ->
+                {reply, {error, badarg}, State}
+        end
     catch
         _:_ ->
             {reply, {error, badarg}, State}
@@ -98,8 +117,8 @@ handle_call(_Msg, _From, State) ->
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
-handle_info(kill_something, State = #state{avg_wait = AvgWait}) ->
-    case do_kill() of
+handle_info(kill_something, State = #state{avg_wait = AvgWait, apps = Apps}) ->
+    case do_kill(Apps) of
         {ok, KilledInfo} ->
             p("Killed ~p", [KilledInfo]);
         {error, no_killable_processes} ->
@@ -241,8 +260,11 @@ do_almost_kill(AppFilter) ->
          runtime_tools, sasl, snmp, ssh, ssl, stdlib, syntax_tools,
          test_server, toolbar, tools, tv, typer, webtool, wx, xmerl]).
 
-is_killable(Pid, App) ->
-    is_killable(Pid, App, all_but_otp, true).
+%% is_killable(Pid, App) ->
+%%     is_killable(Pid, App, all_but_otp, true).
+
+is_killable(Pid, App, AppFilter) ->
+    is_killable(Pid, App, AppFilter, true).
 
 is_killable(Pid, App, AppFilter, IsSupervisorKillable)
   when is_pid(Pid), is_atom(App), is_boolean(IsSupervisorKillable) ->
@@ -472,16 +494,16 @@ make_tree([ChildPid | ChildPids],
             end
     end.
 
-do_kill() ->
-    do_kill_one(randomize(erlang:processes())).
+do_kill(AppFilter) ->
+    do_kill_one(randomize(erlang:processes()), AppFilter).
 
-do_kill_one([]) -> {error, no_killable_processes};
-do_kill_one([Pid | Pids]) ->
+do_kill_one([], _AppFilter) -> {error, no_killable_processes};
+do_kill_one([Pid | Pids], AppFilter) ->
     App = case application:get_application(Pid) of
               {ok, A} -> A; %% No apps named undefined, please!
               undefined -> undefined
           end,
-    case is_killable(Pid, App) of
+    case is_killable(Pid, App, AppFilter) of
         true -> {ok, {Pid, App, kill(Pid)}};
-        false -> do_kill_one(Pids)
+        false -> do_kill_one(Pids, AppFilter)
     end.
