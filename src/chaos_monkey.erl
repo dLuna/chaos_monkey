@@ -362,19 +362,6 @@ kill_tree(#node{type = supervisor,
     KillAll = lists:sublist(Children, Intensity),
     lists:sum([kill_tree(Child) || Child <- KillAll]).
 
-%% with_ancestors(Pids) ->
-%%     [case erlang:process_info(Pid, dictionary) of
-%%          {dictionary, PDict} ->
-%%              case lists:keyfind('$ancestors', 1, PDict) of
-%%                  {'$ancestors', [Ancestor | _Ancestors]} ->
-%%                      {Pid, Ancestor};
-%%                  _ ->
-%%                      {Pid, unknown}
-%%              end;
-%%          _ ->
-%%              {Pid, unknown}
-%%      end || Pid <- Pids].
-
 %% Copied from supervisor.erl
 -record(child, {% pid is undefined when child is not running
 	        pid = undefined,
