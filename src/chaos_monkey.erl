@@ -109,14 +109,6 @@ handle_info(kill_something, State = #state{avg_wait = AvgWait}) ->
     WaitTime = round(AvgWait * ((1 - Var) + (Var * 2 * random:uniform()))),
     {ok, Ref} = timer:send_after(WaitTime, kill_something),
     {noreply, State#state{timer_ref = Ref}};
-handle_info(kill, State) ->
-    case do_kill() of
-        {ok, KilledInfo} ->
-            p("Killed ~p", [KilledInfo]);
-        {error, no_killable_processes} ->
-            p("Warning: no killable processes.", [])
-    end,
-    {noreply, State};
 handle_info(Info, State) ->
     p("Unknown info ~p", [Info]),
     {noreply, State}.
