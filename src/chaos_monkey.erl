@@ -58,7 +58,7 @@ havoc(Apps, Protected) ->
     do_havoc(Apps, Protected).
 
 kill() ->
-    case app_processes_by_filter(all_but_otp) of
+    case tagged_processes_from(all_but_otp) of
         [] -> {error, no_killable_processes};
         Processes ->
             {App, Pid} = random(Processes),
@@ -272,16 +272,15 @@ do_find_orphans() ->
                 (_) -> false end, Ps).
 
 do_havoc(Apps, Protected) ->
-    AppProcess = app_process_by_filter(Apps),
+    AppProcess = tagged_processes_from(Apps),
     ByApp = lists:foldl(fun({App, P}, [{App, Ps} | Acc]) ->
                                 [{App, [P | Ps]} | Acc];
                            ({App, P}, Acc) ->
                                 [{App, [P]} | Acc]
-                        end, [], lists:sort(AppProcess)).
-
+                        end, [], lists:sort(AppProcess)),
     %% Start off by killing everything which doesn't belong to an app
     {N0, Ps1} =
-        case lists:keytake(undefined, 1, Ps0) of
+        case lists:keytake(undefined, 1, ByApp) of
             {value, {undefined, Undefined}, PsNoUndefined} ->
                 {lists:foldl(
                   fun(Pid, N) ->
@@ -303,7 +302,7 @@ do_havoc(Apps, Protected) ->
                           end
                   end, 0, Undefined), PsNoUndefined};
             false ->
-                {0, Ps0}
+                {0, ByApp}
         end,
     N = lists:foldl(
           fun({App, Pids}, N) ->
@@ -311,7 +310,7 @@ do_havoc(Apps, Protected) ->
                   Killed = app_killer(Pids),
                   N + Killed
           end, N0, randomize(Ps1)),
-    {error, not_yet_implemented, N, Ps0}.
+    {error, not_yet_implemented, N, ByApp}.
 
 -define(OTP_APPS,
         [appmon, asn1, common_test, compiler, cosEvent,
@@ -324,29 +323,28 @@ do_havoc(Apps, Protected) ->
          runtime_tools, sasl, snmp, ssh, ssl, stdlib, syntax_tools,
          test_server, toolbar, tools, tv, typer, webtool, wx, xmerl]).
 
-app_process_by_filter(all) ->
-    app_process_by_filter(fun(_) -> true end);
-app_process_by_filter(all_but_otp) ->
-    app_process_by_filter(fun(App) -> not(lists:member(App, ?OTP_APPS)) end);
-app_process_by_filter(Apps) ->
-    app_process_by_filter(fun(undefined) -> true;
+tagged_processes_from(all) ->
+    tagged_processes_from(fun(_) -> true end);
+tagged_processes_from(all_but_otp) ->
+    tagged_processes_from(fun(App) -> not(lists:member(App, ?OTP_APPS)) end);
+tagged_processes_from(Apps) when is_list(Apps) ->
+    tagged_processes_from(fun(undefined) -> true;
                              (App) -> lists:member(App, Apps) end);
-app_processes_by_filter(IsIncludedF) when is_function(IsIncludedF, 1) ->
+tagged_processes_from(IsIncludedF) when is_function(IsIncludedF, 1) ->
     All = [{case application:get_application(P) of
                 {ok, App} -> App;
                 undefined -> undefined
             end, P} || P <- erlang:processes()],
-    OnlyIncludedApps =
-        lists:filter(
-          fun({App, P}) ->
-                  not(pman_process:is_system_process(P))
-                      andalso
-                      not(lists:member(App, [kernel, chaos_monkey]))
-                      andalso
-                      IsIncludedF(App)
-                      andalso
-                      not(is_shell(P))
-          end, All).
+    lists:filter(
+      fun({App, P}) ->
+              not(pman_process:is_system_process(P))
+                  andalso
+                  not(lists:member(App, [kernel, chaos_monkey]))
+                  andalso
+                  IsIncludedF(App)
+                  andalso
+                  not(is_shell(P))
+      end, All).
 
 %% Theoretically pman_process:is_system_process/1 should say true for
 %% the shell.  Well, it doesn't, so this is a workaround until it
