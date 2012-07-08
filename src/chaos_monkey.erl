@@ -278,7 +278,7 @@ do_havoc(AppFilter) ->
     TaggedProcesses =
         lists:filter(fun({App, Pid}) ->
                              is_killable(Pid, App, AppFilter, false)
-                     end, All),
+                     end, randomize(All)),
     ByApp = lists:foldl(fun({App, P}, [{App, Ps} | Acc]) ->
                                 [{App, [P | Ps]} | Acc];
                            ({App, P}, Acc) ->
@@ -316,7 +316,7 @@ do_havoc(AppFilter) ->
                   Killed = app_killer(App, Pids),
                   N + Killed
           end, N0, randomize(Ps1)),
-    {error, not_yet_implemented, N, ByApp}.
+    {ok, N}.
 
 -define(OTP_APPS,
         [appmon, asn1, common_test, compiler, cosEvent,
@@ -422,29 +422,35 @@ app_killer(App, Pids) ->
                     "a deadline here...",
                 {Single, 0}
         end,
-    p("Supervision tree for ~p will go down at death ~p if The Chaos "
+    p("Supervision tree for ~p will go down at ~p kills if The Chaos "
       "Monkey kills it in the right order.",
       [App, RealTree#node.will_die_at]),
-    p("Tree: ~p", [Tree]),
-    p("SupSt: ~p", [SupStates]),
-    TODO = "find supervisors, and build up the tree.  Kill enough "
-        "children that the supervisors start to die.  Stay away "
-        "from killing the top level supervisor.",
-    KilledOrphans + KilledTrees.
+    TreeKilling = almost_kill_tree(RealTree),
+    KilledOrphans + KilledTrees + TreeKilling.
 
-%% Counters:
-%%    #dead already
-%%    sups
-%%    children
-%%    neither sups nor children
-%%    disconnected sups
-%%    total killable with no dead sups
-%%      kill and check status
-%%    total killable with no dead top level sups
-%%      kill and check status
-%%    #Killed
-%%    total number of processes before killing anything
-%%    total number of processes after killing things
+almost_kill_tree(#node{type = child}) -> 0;
+almost_kill_tree(#node{type = supervisor,
+                       child_data = Children,
+                       intensity = Intensity}) ->
+    KillAllButOne = lists:sublist(Children, Intensity),
+    case randomize(KillAllButOne) of
+        [] -> 0; %% nothing to kill, we are done here
+        L when length(L) < Intensity ->
+            lists:sum([kill_tree(Child) || Child <- Children]);
+        [DontKill | KillList] ->
+            almost_kill_tree(DontKill) +
+                lists:sum([kill_tree(Kill) || Kill <- KillList])
+    end.
+
+kill_tree(#node{pid = Pid, type = child}) ->
+    kill(Pid),
+    %% p("killed", []),
+    1;
+kill_tree(#node{type = supervisor,
+                child_data = Children,
+                intensity = Intensity}) ->
+    KillAll = lists:sublist(Children, Intensity),
+    lists:sum([kill_tree(Child) || Child <- KillAll]).
 
 %% with_ancestors(Pids) ->
 %%     [case erlang:process_info(Pid, dictionary) of
@@ -554,7 +560,12 @@ make_tree([ChildPid | ChildPids],
                                         child_data = [CompletedChild |
                                                       Node#node.child_data]});
                         false ->
-                            p("Missing child ~p, ignoring", [ChildPid]),
+                            case ChildPid =:= undefined of
+                                true ->
+                                    ok;
+                                false ->
+                                    p("Missing child ~p, ignoring", [ChildPid])
+                            end,
                             make_tree(ChildPids,
                                       SupStates,
                                       OtherPids,
