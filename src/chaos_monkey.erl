@@ -461,6 +461,7 @@ app_killer(App, Pids) ->
 
 -record(node,
         {pid,
+         type,
          intensity,
          period,
          child_data = []}).
@@ -477,6 +478,7 @@ supervision_state(Pid) ->
              Period, _Restarts, _Module, _Args} = State,
             ChildPids = [CPid || #child{pid = CPid} <- Children],
             {#node{pid = Pid,
+                   type = supervisor,
                    intensity = Intensity,
                    period = Period}, ChildPids}
     catch
@@ -523,7 +525,8 @@ make_tree([ChildPid | ChildPids],
                               Pre ++ Post,
                               Completed,
                               Node#node{
-                                child_data = [ChildPid |
+                                child_data = [#node{pid = ChildPid,
+                                                    type = child} |
                                               Node#node.child_data]});
                 {_, []} ->
                     case lists:keytake(ChildPid, #node.pid, Completed) of
