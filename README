@@ -2,10 +2,15 @@ This is The CHAOS MONKEY.  It will kill your processes.
 
 "What kills you, makes you stronger" -- The Chaos Monkey
 
+The purpose of The Chaos Monkey is to find out if your system is
+stable or not.  What will your system do when things start to go wrong
+and your processes die randomly?  The Chaos Monkey will show you.
+With a stick.
+
 Start by including the chaos_monkey amongst your applications.  The
-Chaos Monkey stays in his cage and eats bananas by default.  Let it
-out by running chaos_monkey:on() or have him kill a single process
-using chaos_monkey:kill().
+Chaos Monkey sits in its cage and eats bananas.  Let it out by running
+chaos_monkey:on() or have him kill a single process using
+chaos_monkey:kill().
 
 
 chaos_monkey:on() -> {ok, started} | {error, already_running}
@@ -17,8 +22,8 @@ chaos_monkey:off() -> {ok, stopped} | {error, not_running}
   system.  This is the command to use if you want The Chaos Monkey
   running all the time.
 
-  It will stay away from system processes and supervisors like a good
-  monkey.
+  It will stay away from system processes, OTP applications, and
+  supervisors like a good monkey.
 
 
 chaos_monkey:havoc() ->
