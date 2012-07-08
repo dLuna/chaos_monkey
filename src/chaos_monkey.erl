@@ -407,15 +407,13 @@ app_killer(App, Pids) ->
             [Single] ->
                 {Single, 0};
             [Single | _] ->
-                %% p("There is an orphan supervision tree in ~p.  The Chaos "
-                %%   "Monkey hits all of their children", [App]),
                 p("There are multiple top level supervision trees for ~p.  "
                   "The Chaos Money picks one randomly to harass.  At some"
                   "point in the future it will pick the right one and kill"
-                  "the others.  Hand in a feature request", [App]),
-                TODO_multi_tree = "Look at '$ancestors' to find the "
-                    "*real* supervision tree.  Easy to do but we are under "
-                    "a deadline here...",
+                  "the others.  Hand in a feature request.", [App]),
+                %% Look at '$ancestors' to find the *real* supervision
+                %% tree.  Easy to do but we are under a deadline
+                %% here...
                 {Single, 0}
         end,
     p("Supervision tree for ~p will go down at ~p kills if The Chaos "
