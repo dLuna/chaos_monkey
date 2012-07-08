@@ -285,7 +285,7 @@ do_havoc(AppFilter) ->
                                 [{App, [P]} | Acc]
                         end, [], lists:sort(TaggedProcesses)),
     %% Start off by killing everything which doesn't belong to an app
-    {N0, Ps1} =
+    {KilledNoApp, Ps1} =
         case lists:keytake(undefined, 1, ByApp) of
             {value, {undefined, Undefined}, PsNoUndefined} ->
                 {lists:foldl(
@@ -310,13 +310,13 @@ do_havoc(AppFilter) ->
             false ->
                 {0, ByApp}
         end,
-    N = lists:foldl(
-          fun({App, Pids}, N) ->
-                  p("About to kill things in ~p", [App]),
-                  Killed = app_killer(App, Pids),
-                  N + Killed
-          end, N0, randomize(Ps1)),
-    {ok, N}.
+    KilledApp =
+        lists:sum(
+          [begin
+               p("About to kill things in ~p", [App]),
+               app_killer(App, Pids)
+           end || {App, Pids} <- randomize(Ps1)]),
+    {ok, KilledNoApp + KilledApp}.
 
 -define(OTP_APPS,
         [appmon, asn1, common_test, compiler, cosEvent,
