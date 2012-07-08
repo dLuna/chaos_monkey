@@ -201,3 +201,11 @@ I'll write some placeholder documentation for later.
 I'm back!  And only seven and a half hours to go.  Yikes!  So maybe I
 didn't go straight to bed when I wrote the above text.  :-)
 
+14:09
+
+Apparently I'm leading the commit-race, and have more than 10% of the
+total commits in the whole of Spawnfest.  I think that by lines of
+code I'm down by the bottom, and by functionality I'm probably around
+whatever.
+
+
