@@ -8,13 +8,6 @@ out by running chaos_monkey:on() or have him kill a single process
 using chaos_monkey:kill().
 
 
-chaos_monkey:find_orphans() -> [Pid]
-
-  The Chaos Monkey smell processes and find the ones which don't have
-  the protection of an application.  It gladly hands them over to you
-  to do with them as you please.
-
-
 chaos_monkey:on() -> {ok, started} | {error, already_running}
 chaos_monkey:off() -> {ok, stopped} | {error, not_running}
 
@@ -74,6 +67,14 @@ chaos_monkey:havoc(Applications, Protected) ->
 
 chaos_monkey:kill() -> {ok, ProcData}.
 
-  Kills a single random process in your system.
+  Kills a single random non-OTP process in your system.
 
   ProcData contains information about the process that was killed.
+
+
+chaos_monkey:find_orphans() -> [Pid]
+
+  The Chaos Monkey smell processes and find the ones which don't have
+  the protection of an application.  It gladly hands them over to you
+  to do with them as you please.  A well-behaved system should return
+  [] when calling this function.
