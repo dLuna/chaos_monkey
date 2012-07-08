@@ -36,7 +36,7 @@ chaos_monkey:havoc(Applications) ->
 
   Types:
 
-    Applications :: all | all_but_otp | all_but_deps | [application()]
+    Applications :: all | all_but_otp | [application()]
     NumberOfKilledProcesses :: non_neg_integer()
     Error :: term()
 
@@ -47,13 +47,14 @@ chaos_monkey:havoc(Applications) ->
   The Chaos Monkey will randomly walk through processes belonging to
   the list of applications and kill everything a couple of times.
   Supervisors are too strong for The Chaos Monkey, so it will kill
-  their children instead, aiming to kill by going above the restart
-  threshold.  The Chaos Monkey is not suicidal so it will respect
-  restart thresholds of permanent top level supervisors.
+  their children instead, aiming to kill them by going above the
+  restart threshold.  The Chaos Monkey is not suicidal so it will
+  respect restart thresholds of permanent top level supervisors.
 
   As well as not killing supervisors; system processes and processes
   in the kernel application are too strong.  As mentioned above The
-  Chaos Monkey is also not suicidal.
+  Chaos Monkey will avoid suicide and by extension its siblings and
+  parent.
 
   The Applications argument, tells The Chaos Monkey to focus its
   killing spree on:
