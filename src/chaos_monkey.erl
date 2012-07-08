@@ -13,7 +13,6 @@
 -export([find_orphans/0,
          havoc/0,
          havoc/1,
-         havoc/2,
          kill/0,
          off/0,
          on/0]).
@@ -52,10 +51,7 @@ havoc() ->
     havoc(all_but_otp).
 
 havoc(Apps) ->
-    havoc(Apps, []).
-
-havoc(Apps, Protected) ->
-    do_havoc(Apps, Protected).
+    do_havoc(Apps).
 
 kill() ->
     do_kill().
@@ -275,7 +271,7 @@ do_find_orphans() ->
                      end;
                 (_) -> false end, Ps).
 
-do_havoc(Apps, Protected) ->
+do_havoc(Apps) ->
     AppProcess = tagged_processes_from(Apps),
     ByApp = lists:foldl(fun({App, P}, [{App, Ps} | Acc]) ->
                                 [{App, [P | Ps]} | Acc];
