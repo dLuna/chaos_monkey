@@ -29,9 +29,9 @@ chaos_monkey:off() -> {ok, stopped} | {error, not_running}
   in for a surprise.
 
 
-chaos_monkey:havoc() ->
+chaos_monkey:almost_kill() ->
     {ok, NumberOfKilledProcesses} | {error, Error}
-chaos_monkey:havoc(Applications) ->
+chaos_monkey:almost_kill(Applications) ->
     {ok, NumberOfKilledProcesses} | {error, Error}
 
   Types:
