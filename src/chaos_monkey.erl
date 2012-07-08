@@ -139,7 +139,7 @@ is_supervisor(Pid) ->
         {supervisor, _, _} -> true;
         _ -> false
     end.
-    
+
 p(Format, Data) ->
     catch throw(get_stacktrace), Stacktrace = erlang:get_stacktrace(),
     MFAInfo = hd(tl(Stacktrace)),
