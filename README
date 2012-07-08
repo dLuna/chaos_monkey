@@ -14,7 +14,16 @@ chaos_monkey:kill().
 
 
 chaos_monkey:on() -> {ok, started} | {error, already_running}
+chaos_monkey:on(Opts) ->
+    {ok, started}
+  | {error, already_running}
+  | {error, badarg}
 chaos_monkey:off() -> {ok, stopped} | {error, not_running}
+
+  Types:
+
+    Opts :: [Opt]
+    Opt :: {ms, non_neg_integer()}
 
   Asynchronous.
 

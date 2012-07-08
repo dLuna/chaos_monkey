@@ -14,8 +14,8 @@
          almost_kill/1,
          kill/0,
          off/0,
-         on/0]).
-
+         on/0,
+         on/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -53,7 +53,10 @@ kill() ->
     do_kill().
 
 on() ->
-    gen_server:call(?SERVER, on, infinity).
+    gen_server:call(?SERVER, {on, [{ms, ?TIMER}]}, infinity).
+
+on(Opts) ->
+    gen_server:call(?SERVER, {on, Opts}, infinity).
 
 off() ->
     gen_server:call(?SERVER, off, infinity).
@@ -65,10 +68,18 @@ init([]) ->
     random:seed(now()),
     {ok, #state{}}.
 
-handle_call(on, _From, State = #state{is_active = false}) ->
-    NewState = State#state{avg_wait = ?TIMER, is_active = true},
-    self() ! kill_something,
-    {reply, {ok, started}, NewState};
+handle_call({on, Opts}, _From, State = #state{is_active = false}) ->
+    try lists:keyfind(ms, 1, Opts) of
+        {ms, Ms} when is_integer(Ms), Ms >= 0 ->
+            NewState = State#state{avg_wait = Ms, is_active = true},
+            self() ! kill_something,
+            {reply, {ok, started}, NewState};
+        _ ->
+            {reply, {error, badarg}, State}
+    catch
+        _:_ ->
+            {reply, {error, badarg}, State}
+    end;
 handle_call(off, _From, State = #state{is_active = true, timer_ref = Ref}) ->
     timer:cancel(Ref),
     receive kill_something -> ok
@@ -76,7 +87,7 @@ handle_call(off, _From, State = #state{is_active = true, timer_ref = Ref}) ->
     end,
     NewState = State#state{is_active = false},
     {reply, {ok, stopped}, NewState};
-handle_call(on, _From, State = #state{is_active = true}) ->
+handle_call({on, _}, _From, State = #state{is_active = true}) ->
     {reply, {error, already_running}, State};
 handle_call(off, _From, State = #state{is_active = false}) ->
     {reply, {error, not_running}, State};
