@@ -262,3 +262,11 @@ Major cleanup coming up.
 It feels like I'm done now.
 
 Now I just have to wait for that box of Malbec wine to show up.  :-)
+
+19:16
+
+Less than an hour to go.  Just added more options for on/1, so that
+the user can pick which applications to harass.
+
+I'm not sure I dare adding more features.  It would be silly to have a
+broken application in there when the bell rings.
