@@ -329,37 +329,19 @@ do_havoc(Apps, Protected) ->
          runtime_tools, sasl, snmp, ssh, ssl, stdlib, syntax_tools,
          test_server, toolbar, tools, tv, typer, webtool, wx, xmerl]).
 
-tagged_processes_from(all) ->
-    tagged_processes_from(fun(_) -> true end);
-tagged_processes_from(all_but_otp) ->
-    tagged_processes_from(fun(App) -> not(lists:member(App, ?OTP_APPS)) end);
-tagged_processes_from(Apps) when is_list(Apps) ->
-    tagged_processes_from(fun(undefined) -> true;
-                             (App) -> lists:member(App, Apps) end);
-tagged_processes_from(IsIncludedF) when is_function(IsIncludedF, 1) ->
+tagged_processes_from(AppFilter) ->
     All = [{case application:get_application(P) of
-                {ok, App} -> App;
+                {ok, App} -> App; %% No apps named undefined, please!
                 undefined -> undefined
             end, P} || P <- erlang:processes()],
-    lists:filter(
-      fun({App, P}) ->
-              not(pman_process:is_system_process(P))
-                  andalso
-                  not(lists:member(App, [kernel, chaos_monkey]))
-                  andalso
-                  IsIncludedF(App)
-                  andalso
-                  not(is_shell(P))
-      end, All).
+    lists:filter(fun({App, Pid}) ->
+                         is_maybe_killable(Pid, App, AppFilter)
+                 end, All).
 
-is_maybe_killable(Pid, Filter) ->
-    App = case application:get_application(Pid) of
-              {ok, A} -> A; %% No apps named undefined, please!
-              undefined -> undefined
-          end,
+is_maybe_killable(Pid, App, AppFilter) when is_pid(Pid), is_atom(App) ->
     (App =:= undefined
      orelse
-     case Filter of
+     case AppFilter of
          all -> true;
          all_but_otp -> not(lists:member(App, ?OTP_APPS));
          Apps when is_list(Apps) -> lists:member(App, Apps)
