@@ -17,8 +17,7 @@
          on/0]).
 
 -export([calm/0]).
--export([kill_ms/1,
-         kill_n/1]).
+-export([kill_ms/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -66,9 +65,6 @@ off() ->
 
 kill_ms(Ms) ->
     gen_server:call(?SERVER, {kill_ms, Ms}, infinity).
-
-kill_n(N) ->
-    gen_server:call(?SERVER, {kill_n, N}, infinity).
 
 calm() ->
     gen_server:call(?SERVER, calm, infinity).
