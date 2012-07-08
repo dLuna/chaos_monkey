@@ -40,16 +40,18 @@ chaos_monkey:almost_kill(Applications) ->
     NumberOfKilledProcesses :: non_neg_integer()
     Error :: term()
 
-  NOT IMPLEMENTED YET
-
   Synchronous.
+  
+  This function call will almost kill your system.  If it works as
+  published, The Chaos Monkey should stay one process away from
+  bringing your system down.  Can you recover from that?
 
   The Chaos Monkey will randomly walk through processes belonging to
-  the list of applications and kill everything a couple of times.
-  Supervisors are too strong for The Chaos Monkey, so it will kill
-  their children instead, aiming to kill them by going above the
-  restart threshold.  The Chaos Monkey is not suicidal so it will
-  respect restart thresholds of permanent top level supervisors.
+  the list of applications and kill things.  Supervisors are too
+  strong for The Chaos Monkey, so it will kill their children instead,
+  aiming to kill them by going above the restart threshold.  The Chaos
+  Monkey is not suicidal so it will respect restart thresholds of
+  permanent top level supervisors.
 
   As well as not killing supervisors; system processes and processes
   in the kernel application are too strong.  As mentioned above The
