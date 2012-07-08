@@ -10,7 +10,8 @@ With a stick.
 Start by including the chaos_monkey amongst your applications.  The
 Chaos Monkey sits in its cage and eats bananas.  Let it out by running
 chaos_monkey:on() or have him kill a single process using
-chaos_monkey:kill().
+chaos_monkey:kill().  More installation instructions can be found in
+INSTALL.
 
 
 chaos_monkey:on() -> {ok, started} | {error, already_running}
