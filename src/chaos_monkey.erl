@@ -384,13 +384,76 @@ kill(Pid) ->
             end
     end.
 
-app_killer(Apps, Pids) ->
+app_killer(App, Pids) ->
     {Sups, Other} = lists:partition(fun(Pid) -> is_supervisor(Pid) end, Pids),
+    
+    WithA = with_ancestors(Pids),
+    p("WithA: ~p", [WithA]),
+    SupStates = [supervision_state(Pid) || Pid <- Sups],
+    p("SupSt: ~p", [SupStates]),
+    
     p("Sups: ~p, Other: ~p", [Sups, Other]),
+    %% [io:format("~p: ~p~n", [Pid, erlang:process_info(Pid)]) || Pid <- Sups],
+    
     TODO = "find supervisors, and build up the tree.  Kill enough "
         "children that the supervisors start to die.  Stay away "
         "from killing the top level supervisor.",
     0.
+
+%% Copied from supervisor.erl
+-record(child, {% pid is undefined when child is not running
+	        pid = undefined,
+		name,
+		mfargs,
+		restart_type,
+		shutdown,
+		child_type,
+		modules = []}).
+
+%% Counters:
+%%    #dead already
+%%    sups
+%%    children
+%%    neither sups nor children
+%%    disconnected sups
+%%    total killable with no dead sups
+%%      kill and check status
+%%    total killable with no dead top level sups
+%%      kill and check status
+%%    #Killed
+%%    total number of processes before killing anything
+%%    total number of processes after killing things
+
+with_ancestors(Pids) ->
+    [case erlang:process_info(Pid, dictionary) of
+         {dictionary, PDict} ->
+             case lists:keyfind('$ancestors', 1, PDict) of
+                 {'$ancestors', [Ancestor | _Ancestors]} ->
+                     {Pid, Ancestor};
+                 _ ->
+                     {Pid, unknown}
+             end;
+         _ ->
+             {Pid, unknown}
+     end || Pid <- Pids].
+
+supervision_state(Pid) ->
+    try sys:get_status(Pid) of
+        %% from sys.erl
+        {status, Pid, {module, _Mod},
+         [_PDict, _SysState, _Parent, _Debug, FmtMisc]} ->
+            [_, _, {data, [{"State", State}]}] = FmtMisc,
+            %% From supervisor.erl but I already have a #state{} in
+            %% this module so cannot copy the one from there
+            {state, _Name, _Strategy, Children, _Dynamics, Intensity,
+             Period, _Restarts, _Module, _Args} = State,
+            ChildPids = [CPid || #child{pid = CPid} <- Children],
+            {Pid, ChildPids, Intensity, Period}
+    catch
+        exit:timeout ->
+            throw({supervisor_died_before_we_could_query_it,
+                   report_this_as_a_bug_or_just_rerun_the_command})
+    end.
 
 do_kill() ->
     do_kill_one(randomize(erlang:processes())).
