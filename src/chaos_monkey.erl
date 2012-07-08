@@ -313,7 +313,7 @@ do_havoc(AppFilter) ->
     N = lists:foldl(
           fun({App, Pids}, N) ->
                   p("About to kill things in ~p", [App]),
-                  Killed = app_killer(Pids),
+                  Killed = app_killer(App, Pids),
                   N + Killed
           end, N0, randomize(Ps1)),
     {error, not_yet_implemented, N, ByApp}.
@@ -384,7 +384,9 @@ kill(Pid) ->
             end
     end.
 
-app_killer(_Pids) ->
+app_killer(Apps, Pids) ->
+    {Sups, Other} = lists:partition(fun(Pid) -> is_supervisor(Pid) end, Pids),
+    p("Sups: ~p, Other: ~p", [Sups, Other]),
     TODO = "find supervisors, and build up the tree.  Kill enough "
         "children that the supervisors start to die.  Stay away "
         "from killing the top level supervisor.",
