@@ -168,4 +168,13 @@ Break over.
 Lots of cleanup of code and documentation.  Time to focus on having
 some sort of version of havoc ready before going to bed.
 
+20:04
+
+Leaving to watch the UFC fight.  The Chaos Monkey can wreck som very
+minor havoc.  More will have to wait until later.
+
+00:50
+
+Anderson Silva kept his belt.  And I got to eat spare ribs.  Everyone
+is happy.
 
