@@ -208,4 +208,18 @@ total commits in the whole of Spawnfest.  I think that by lines of
 code I'm down by the bottom, and by functionality I'm probably around
 whatever.
 
+14:21
+
+Now I have all the information I need to do the rest of what I have
+planned.  How come I can't even build a stupid tree!
+
+15:40
+
+There is a tree structure.  Ugly, but hopefully works well enough for
+my purposes.  I could possibly have used digraph for this, but
+whatever.  Next time.
+
+15:44
+
+INSTALL written.  Should explain things well enough I hope.
 
