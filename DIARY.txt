@@ -189,4 +189,15 @@ it compiling again.  I hope it works too...
 Major code improvements.  Not really moving closer to the goal, but
 the code *looks* much nicer.
 
+02:45
+
+I think I'll introduce more bugs than I fix by now.  Time to sleep.
+See you all tomorrow.
+
+I'll write some placeholder documentation for later.
+
+12:28
+
+I'm back!  And only seven and a half hours to go.  Yikes!  So maybe I
+didn't go straight to bed when I wrote the above text.  :-)
 
