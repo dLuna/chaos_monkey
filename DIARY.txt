@@ -228,3 +228,8 @@ INSTALL written.  Should explain things well enough I hope.
 Yikes.  3 hours and change to go.  And orphans get killed by the
 monkey.  The main issue is still a bit away.
 
+17:07
+
+Print a count of max number of processes at which point the tree would
+die.
+
