@@ -243,3 +243,10 @@ Killing 23 processes in cowboy.  My system tells me everything goes
 down at 23, but that it probably survives 22.  Why doesn't this
 happen?
 
+17:57
+
+Issue explained.  It had to do with the restart strategy of the app.
+FIXED!
+
+And with zero lines of code (ok, so maybe ten lines of debug printout,
+but who's counting).
