@@ -282,6 +282,8 @@ is_killable(Pid, App, AppFilter, IsSupervisorKillable)
         andalso
         not(is_shell(Pid))
         andalso
+        not(Pid =:= self())
+        andalso
         (not(IsSupervisorKillable)
          orelse
          not(is_supervisor(Pid))).
