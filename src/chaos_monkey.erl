@@ -44,14 +44,14 @@ start_link() ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% START OF EXTERNAL API
 
-find_orphans() ->
-    do_find_orphans().
-
 almost_kill() ->
     do_almost_kill(all_but_otp).
 
 almost_kill(Apps) ->
     do_almost_kill(Apps).
+
+find_orphans() ->
+    do_find_orphans().
 
 kill() ->
     do_kill(all_but_otp).
@@ -67,6 +67,7 @@ off() ->
 
 %% END OF EXTERNAL API
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% START OF GEN_SERVER CALLBACKS
 
 init([]) ->
     random:seed(now()),
@@ -138,68 +139,9 @@ terminate(_Reason, _State) ->
 code_change(_OldVsn, State, _Extra) ->
     {ok, State}.
 
-randomize(Xs) ->
-    [V || {_, V} <- lists:sort([{random:uniform(), X} || X <- Xs])].
-
-%% random(L) ->
-%%     lists:nth(random:uniform(length(L)), L).
-
-is_supervisor(Pid) ->
-    %% inspired by pman_process:is_system_process2/1 which seems
-    %% cleaner somehow to just grabbing the info from the process_info
-    %% dictionary (this is what happens in the background anyway).
-    {initial_call, Init} = erlang:process_info(Pid, initial_call),
-    SortofActualInit =
-        case Init of
-            {proc_lib, init_p, 5} -> proc_lib:translate_initial_call(Pid);
-            Init -> Init
-        end,
-    case SortofActualInit of
-        {supervisor, _, _} -> true;
-        _ -> false
-    end.
-
-p(Format, Data) ->
-    catch throw(get_stacktrace), Stacktrace = erlang:get_stacktrace(),
-    MFAInfo = hd(tl(Stacktrace)),
-    String =
-        case MFAInfo of
-            {M, F, A} ->
-                format_single_line("~p ~p:~p/~p " ++ Format,
-                                   [self(), M, F, A | Data]);
-            {M, F, A, Info} ->
-                case lists:keysearch(line, 1, Info) of
-                    {value, {line, Line}} ->
-                        format_single_line("~p ~p:~p/~p #~p " ++ Format,
-                                           [self(), M, F, A, Line | Data]);
-                    false ->
-                        format_single_line("~p ~p:~p/~p " ++ Format,
-                                           [self(), M, F, A | Data])
-                end
-        end,
-    io:format("~s~n", [String]).
-
-format_single_line(Format, Data) ->
-    oneline(lists:flatten(io_lib:format(Format, Data))).
-
-oneline([$\n | Rest]) -> [$\s | newline(Rest)];
-oneline([C | Rest]) -> [C | oneline(Rest)];
-oneline([]) -> [].
-
-newline([$\s | Rest]) -> newline(Rest);
-newline(Rest) -> oneline(Rest).
-
-do_find_orphans() ->
-    Ps = [{P,
-           application:get_application(P),
-           pman_process:is_system_process(P)}
-          || P <- erlang:processes()],
-    lists:zf(fun({P, undefined, false}) ->
-                     case is_shell(P) of
-                         true -> false;
-                         false -> {true, P}
-                     end;
-                (_) -> false end, Ps).
+%% END OF GEN_SERVER CALLBACKS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% START OF DO_ FUNCTIONS
 
 do_almost_kill(AppFilter) ->
     All = [{case application:get_application(P) of
@@ -249,78 +191,32 @@ do_almost_kill(AppFilter) ->
            end || {App, Pids} <- randomize(Ps1)]),
     {ok, KilledNoApp + KilledApp}.
 
--define(OTP_APPS,
-        [appmon, asn1, common_test, compiler, cosEvent,
-         cosEventDomain, cosFileTransfer, cosNotification,
-         cosProperty, cosTime, cosTransactions, crypto, debugger,
-         dialyzer, diameter, edoc, eldap, erl_docgen, erl_interface,
-         erts, et, eunit, gs, hipe, ic, inets, inviso, jinterface,
-         kernel, megaco, mnesia, observer, odbc, orber, os_mon,
-         otp_mibs, parsetools, percept, pman, public_key, reltool,
-         runtime_tools, sasl, snmp, ssh, ssl, stdlib, syntax_tools,
-         test_server, toolbar, tools, tv, typer, webtool, wx, xmerl]).
+do_find_orphans() ->
+    Ps = [{P,
+           application:get_application(P),
+           pman_process:is_system_process(P)}
+          || P <- erlang:processes()],
+    lists:zf(fun({P, undefined, false}) ->
+                     case is_shell(P) of
+                         true -> false;
+                         false -> {true, P}
+                     end;
+                (_) -> false end, Ps).
 
-%% is_killable(Pid, App) ->
-%%     is_killable(Pid, App, all_but_otp, true).
+do_kill(AppFilter) ->
+    kill_one(randomize(erlang:processes()), AppFilter).
 
-is_killable(Pid, App, AppFilter) ->
-    is_killable(Pid, App, AppFilter, true).
+%% END OF DO_ FUNCTIONS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% START OF AUXILIARY FUNCTIONS
 
-is_killable(Pid, App, AppFilter, IsSupervisorKillable)
-  when is_pid(Pid), is_atom(App), is_boolean(IsSupervisorKillable) ->
-    (App =:= undefined
-     orelse
-     case AppFilter of
-         all -> true;
-         all_but_otp -> not(lists:member(App, ?OTP_APPS));
-         Apps when is_list(Apps) -> lists:member(App, Apps)
-     end) 
-        andalso
-        not(lists:member(App, [kernel, chaos_monkey]))
-        andalso
-        not(pman_process:is_system_process(Pid))
-        andalso
-        not(is_shell(Pid))
-        andalso
-        not(Pid =:= self())
-        andalso
-        (not(IsSupervisorKillable)
-         orelse
-         not(is_supervisor(Pid))).
+randomize(Xs) ->
+    [V || {_, V} <- lists:sort([{random:uniform(), X} || X <- Xs])].
 
-%% Theoretically pman_process:is_system_process/1 should say true for
-%% the shell.  Well, it doesn't, so this is a workaround until it
-%% does.
-is_shell(Pid) ->
-    %% The shell never belongs to any applicition.  To optimize, check
-    %% that application:get_application(Pid) yields undefined before
-    %% calling this function.
-    {group_leader, Leader} = erlang:process_info(Pid, group_leader),
-    case lists:keyfind(shell, 1, group:interfaces(Leader)) of
-        {shell, Pid} -> true;
-        {shell, Shell} ->
-            case erlang:process_info(Shell, dictionary) of
-                {dictionary, Dict} ->
-                    proplists:get_value(evaluator, Dict) =:= Pid
-            end;
-        false -> false
-    end.
+%% random(L) ->
+%%     lists:nth(random:uniform(length(L)), L).
 
-kill(Pid) ->
-    erlang:monitor(process, Pid),
-    exit(Pid, im_killing_you),
-    receive
-        {'DOWN', _, process, Pid, Reason} ->
-            Reason
-    after 500 ->
-            exit(Pid, kill),
-            receive
-                {'DOWN', _, process, Pid, Reason} ->
-                    Reason
-            end
-    end.
-
--record(node,
+ -record(node,
         {pid,
          type,
          will_die_at = 1,
@@ -496,16 +392,137 @@ make_tree([ChildPid | ChildPids],
             end
     end.
 
-do_kill(AppFilter) ->
-    do_kill_one(randomize(erlang:processes()), AppFilter).
-
-do_kill_one([], _AppFilter) -> {error, no_killable_processes};
-do_kill_one([Pid | Pids], AppFilter) ->
+kill_one([], _AppFilter) -> {error, no_killable_processes};
+kill_one([Pid | Pids], AppFilter) ->
     App = case application:get_application(Pid) of
               {ok, A} -> A; %% No apps named undefined, please!
               undefined -> undefined
           end,
     case is_killable(Pid, App, AppFilter) of
         true -> {ok, {Pid, App, kill(Pid)}};
-        false -> do_kill_one(Pids, AppFilter)
+        false -> kill_one(Pids, AppFilter)
+    end.
+
+kill(Pid) ->
+    erlang:monitor(process, Pid),
+    exit(Pid, im_killing_you),
+    receive
+        {'DOWN', _, process, Pid, Reason} ->
+            Reason
+    after 500 ->
+            exit(Pid, kill),
+            receive
+                {'DOWN', _, process, Pid, Reason} ->
+                    Reason
+            end
+    end.
+
+%% END OF AUXILIARY FUNCTIONS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% START OF FORMATTING FUNCTIONS
+
+p(Format, Data) ->
+    catch throw(get_stacktrace), Stacktrace = erlang:get_stacktrace(),
+    MFAInfo = hd(tl(Stacktrace)),
+    String =
+        case MFAInfo of
+            {M, F, A} ->
+                format_single_line("~p ~p:~p/~p " ++ Format,
+                                   [self(), M, F, A | Data]);
+            {M, F, A, Info} ->
+                case lists:keysearch(line, 1, Info) of
+                    {value, {line, Line}} ->
+                        format_single_line("~p ~p:~p/~p #~p " ++ Format,
+                                           [self(), M, F, A, Line | Data]);
+                    false ->
+                        format_single_line("~p ~p:~p/~p " ++ Format,
+                                           [self(), M, F, A | Data])
+                end
+        end,
+    io:format("~s~n", [String]).
+
+format_single_line(Format, Data) ->
+    oneline(lists:flatten(io_lib:format(Format, Data))).
+
+oneline([$\n | Rest]) -> [$\s | newline(Rest)];
+oneline([C | Rest]) -> [C | oneline(Rest)];
+oneline([]) -> [].
+
+newline([$\s | Rest]) -> newline(Rest);
+newline(Rest) -> oneline(Rest).
+
+%% END OF FORMATTING FUNCTIONS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% START OF BOOLEAN FUNCTONS
+
+is_supervisor(Pid) ->
+    %% inspired by pman_process:is_system_process2/1 which seems
+    %% cleaner somehow to just grabbing the info from the process_info
+    %% dictionary (this is what happens in the background anyway).
+    {initial_call, Init} = erlang:process_info(Pid, initial_call),
+    SortofActualInit =
+        case Init of
+            {proc_lib, init_p, 5} -> proc_lib:translate_initial_call(Pid);
+            Init -> Init
+        end,
+    case SortofActualInit of
+        {supervisor, _, _} -> true;
+        _ -> false
+    end.
+
+-define(OTP_APPS,
+        [appmon, asn1, common_test, compiler, cosEvent,
+         cosEventDomain, cosFileTransfer, cosNotification,
+         cosProperty, cosTime, cosTransactions, crypto, debugger,
+         dialyzer, diameter, edoc, eldap, erl_docgen, erl_interface,
+         erts, et, eunit, gs, hipe, ic, inets, inviso, jinterface,
+         kernel, megaco, mnesia, observer, odbc, orber, os_mon,
+         otp_mibs, parsetools, percept, pman, public_key, reltool,
+         runtime_tools, sasl, snmp, ssh, ssl, stdlib, syntax_tools,
+         test_server, toolbar, tools, tv, typer, webtool, wx, xmerl]).
+
+%% is_killable(Pid, App) ->
+%%     is_killable(Pid, App, all_but_otp, true).
+
+is_killable(Pid, App, AppFilter) ->
+    is_killable(Pid, App, AppFilter, true).
+
+is_killable(Pid, App, AppFilter, IsSupervisorKillable)
+  when is_pid(Pid), is_atom(App), is_boolean(IsSupervisorKillable) ->
+    (App =:= undefined
+     orelse
+     case AppFilter of
+         all -> true;
+         all_but_otp -> not(lists:member(App, ?OTP_APPS));
+         Apps when is_list(Apps) -> lists:member(App, Apps)
+     end) 
+        andalso
+        not(lists:member(App, [kernel, chaos_monkey]))
+        andalso
+        not(pman_process:is_system_process(Pid))
+        andalso
+        not(is_shell(Pid))
+        andalso
+        not(Pid =:= self())
+        andalso
+        (not(IsSupervisorKillable)
+         orelse
+         not(is_supervisor(Pid))).
+
+%% Theoretically pman_process:is_system_process/1 should say true for
+%% the shell.  Well, it doesn't, so this is a workaround until it
+%% does.
+is_shell(Pid) ->
+    %% The shell never belongs to any applicition.  To optimize, check
+    %% that application:get_application(Pid) yields undefined before
+    %% calling this function.
+    {group_leader, Leader} = erlang:process_info(Pid, group_leader),
+    case lists:keyfind(shell, 1, group:interfaces(Leader)) of
+        {shell, Pid} -> true;
+        {shell, Shell} ->
+            case erlang:process_info(Shell, dictionary) of
+                {dictionary, Dict} ->
+                    proplists:get_value(evaluator, Dict) =:= Pid
+            end;
+        false -> false
     end.
