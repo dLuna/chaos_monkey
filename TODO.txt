@@ -1,3 +1,31 @@
+2012-07-25 09:47 <MononcQc> I had an idea in the back of my mind to
+                            make an app simulating a node going to
+                            the shitter. Playing with priorities,
+                            causing trouble with scheduling and CPU
+                            use, as if the node was overloaded
+2012-07-25 09:47 <MononcQc> random failures, etc.
+--- ... ---
+2012-07-25 11:13 <dluna> essen: Let me know what features could be
+                         added to the chaos monkey and I'll see
+                         what I can do.
+2012-07-25 11:19 <essen> what MononcQc said, play with priorities,
+                         cause trouble with scheduling, CPU use, as
+                         if the node was overloaded
+2012-07-25 11:21 <MononcQc> call manual GCs and whatnot
+2012-07-25 11:21 <essen> mock gen_tcp and friends to disallow
+                         opening connections
+2012-07-25 11:21 <MononcQc> yeah, pretending file descriptors are
+                            all used up
+2012-07-25 11:21 <essen> mess with distribution
+2012-07-25 11:22 <MononcQc> call net_kernel:disconnect a few times
+                            at random
+2012-07-25 11:22 <MononcQc> and for the tool I had in mind, the
+                            'hellhole' mode would have been to
+                            unleash everything at once. Random
+                            deaths, slow IO (be a slow
+                            group_leader), disconnections, high
+                            CPU, etc.
+
 
 %% Counters to be reported to the user:
 %%    #dead already
