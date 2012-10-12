@@ -70,35 +70,41 @@ off() ->
 %% START OF GEN_SERVER CALLBACKS
 
 init([]) ->
+    case application:get_env(auto_start) of
+        undefined ->
+            ok;
+        {ok, false} ->
+            ok;
+        {ok, true} ->
+            Opts = case application:get_env(ms) of
+                       undefined -> [];
+                       {ok, Ms} -> [{ms, Ms}]
+                   end ++
+                case application:get_env(apps) of
+                    undefined -> [];
+                    {ok, Apps} -> [{apps, Apps}]
+                end ++
+                ?DEFAULT_OPTS,
+            case verify_opts(Opts) of
+                {ok, _, _} ->
+                    ok;
+                {error, Error} ->
+                    exit(Error)
+            end
+    end,
     random:seed(now()),
     {ok, #state{}}.
 
 handle_call({on, Opts}, _From, State = #state{is_active = false}) ->
-    try case lists:keyfind(ms, 1, Opts) of
-            {ms, Ms} when is_integer(Ms), Ms >= 0 ->
-                case lists:keyfind(apps, 1, Opts) of
-                    {apps, Apps} ->
-                        case Apps =:= all
-                            orelse Apps =:= all_but_otp 
-                            orelse lists:all(fun(X) -> is_atom(X) end, Apps) of
-                            true ->
-                                NewState = State#state{avg_wait = Ms,
-                                                       apps = Apps,
-                                                       is_active = true},
-                                self() ! kill_something,
-                                {reply, {ok, started}, NewState};
-                            false ->
-                                {reply, {error, badarg}, State}
-                        end;
-                    _ ->
-                        {reply, {error, badarg}, State}
-                end;
-            _ ->
-                {reply, {error, badarg}, State}
-        end
-    catch
-        _:_ ->
-            {reply, {error, badarg}, State}
+    case verify_opts(Opts) of
+        {ok, Ms, Apps} ->
+            NewState = State#state{avg_wait = Ms,
+                                   apps = Apps,
+                                   is_active = true},
+            self() ! kill_something,
+            {reply, {ok, started}, NewState};
+        {error, Error} ->
+            {reply, {error, Error}, State}
     end;
 handle_call(off, _From, State = #state{is_active = true, timer_ref = Ref}) ->
     timer:cancel(Ref),
@@ -209,6 +215,30 @@ do_kill(AppFilter) ->
 %% END OF DO_ FUNCTIONS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% START OF AUXILIARY FUNCTIONS
+
+verify_opts(Opts) ->
+    try case lists:keyfind(ms, 1, Opts) of
+            {ms, Ms} when is_integer(Ms), Ms >= 0 ->
+                case lists:keyfind(apps, 1, Opts) of
+                    {apps, Apps} ->
+                        case Apps =:= all
+                            orelse Apps =:= all_but_otp
+                            orelse lists:all(fun(X) -> is_atom(X) end, Apps) of
+                            true ->
+                                {ok, Ms, Apps};
+                            false ->
+                                {error, badarg}
+                        end;
+                    _ ->
+                        {error, badarg}
+                end;
+            _ ->
+                {error, badarg}
+        end
+    catch
+        _:_ ->
+            {error, badarg}
+    end.
 
 randomize(Xs) ->
     [V || {_, V} <- lists:sort([{random:uniform(), X} || X <- Xs])].
