@@ -87,7 +87,7 @@ init([]) ->
                 ?DEFAULT_OPTS,
             case verify_opts(Opts) of
                 {ok, _, _} ->
-                    spawn(fun() -> on(Opts) end);
+                    spawn_link(fun() -> {ok, started} = on(Opts) end);
                 {error, Error} ->
                     exit(Error)
             end
