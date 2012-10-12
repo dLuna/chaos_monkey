@@ -87,7 +87,7 @@ init([]) ->
                 ?DEFAULT_OPTS,
             case verify_opts(Opts) of
                 {ok, _, _} ->
-                    ok;
+                    spawn(fun() -> on(Opts) end);
                 {error, Error} ->
                     exit(Error)
             end
