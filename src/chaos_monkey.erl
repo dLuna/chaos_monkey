@@ -283,7 +283,7 @@ app_killer(App, Pids) ->
                 {Single, 0};
             [Single | _] ->
                 p("There are multiple top level supervision trees for ~p.  "
-                  "The Chaos Money picks one randomly to harass.  At some"
+                  "The Chaos Monkey picks one randomly to harass.  At some"
                   "point in the future it will pick the right one and kill"
                   "the others.  Hand in a feature request.", [App]),
                 %% Look at '$ancestors' to find the *real* supervision
