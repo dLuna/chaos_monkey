@@ -1,3 +1,7 @@
+* TODO Make small monkey logo
+  to put on pages with the mention "battle tested with chaos_monkey!"
+* TODO Everything else in this file
+
 2012-07-25 09:47 <MononcQc> I had an idea in the back of my mind to
                             make an app simulating a node going to
                             the shitter. Playing with priorities,
