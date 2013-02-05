@@ -224,7 +224,7 @@ verify_opts(Opts) ->
                         case Apps =:= all
                             orelse Apps =:= all_but_otp
                             orelse lists:all(fun(X) -> is_atom(X) end, Apps) of
-                            true ->
+                            true when is_list(Apps) ->
                                 AllApps = application:loaded_applications(),
                                 case lists:all(
                                        fun(X) ->
@@ -235,6 +235,8 @@ verify_opts(Opts) ->
                                     false ->
                                         {error, unknown_application}
                                 end;
+                            true ->
+                                {ok, Ms, Apps};
                             false ->
                                 {error, badly_formed_apps}
                         end;
