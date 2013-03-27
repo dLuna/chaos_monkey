@@ -500,7 +500,11 @@ is_supervisor(Pid) ->
     %% inspired by pman_process:is_system_process2/1 which seems
     %% cleaner somehow to just grabbing the info from the process_info
     %% dictionary (this is what happens in the background anyway).
-    {initial_call, Init} = erlang:process_info(Pid, initial_call),
+    Init =
+        case erlang:process_info(Pid, initial_call) of
+            {initial_call, I} -> I;
+            undefined -> process_is_dead
+        end,
     SortofActualInit =
         case Init of
             {proc_lib, init_p, 5} -> proc_lib:translate_initial_call(Pid);
@@ -557,13 +561,17 @@ is_shell(Pid) ->
     %% The shell never belongs to any applicition.  To optimize, check
     %% that application:get_application(Pid) yields undefined before
     %% calling this function.
-    {group_leader, Leader} = erlang:process_info(Pid, group_leader),
-    case lists:keyfind(shell, 1, group:interfaces(Leader)) of
-        {shell, Pid} -> true;
-        {shell, Shell} ->
-            case erlang:process_info(Shell, dictionary) of
-                {dictionary, Dict} ->
-                    proplists:get_value(evaluator, Dict) =:= Pid
-            end;
-        false -> false
+    case erlang:process_info(Pid, group_leader) of
+        undefined -> false; %% process is dead
+        {group_leader, Leader} ->
+            case lists:keyfind(shell, 1, group:interfaces(Leader)) of
+                {shell, Pid} -> true;
+                {shell, Shell} ->
+                    case erlang:process_info(Shell, dictionary) of
+                        {dictionary, Dict} ->
+                            proplists:get_value(evaluator, Dict) =:= Pid;
+                        undefined -> false %% process is dead
+                    end;
+                false -> false
+            end
     end.
