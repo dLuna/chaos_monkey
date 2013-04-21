@@ -1,3 +1,8 @@
+* TODO 'exclude apps' (instead of, or in addition to, 'include apps')
+  suggested by German Todorov
+* TODO Option whether "orphan" processes should be killed or not
+* TODO randomly suspend gen servers for a couple of seconds to see what happens
+  suggested by archaelus
 * TODO Make small monkey logo
   to put on pages with the mention "battle tested with chaos_monkey!"
 * TODO Everything else in this file
@@ -29,7 +34,6 @@
                             deaths, slow IO (be a slow
                             group_leader), disconnections, high
                             CPU, etc.
-
 
 %% Counters to be reported to the user:
 %%    #dead already
