@@ -3,6 +3,7 @@
 * TODO Option whether "orphan" processes should be killed or not
 * TODO randomly suspend gen servers for a couple of seconds to see what happens
   suggested by archaelus
+* TODO spawn(fun() -> erlang:group_leader(whereis(smemail), self()), App = application:get_application(), erlang:group_leader(whereis(user), self()), io:format("~p", [App]) end).
 * TODO Make small monkey logo
   to put on pages with the mention "battle tested with chaos_monkey!"
 * TODO Everything else in this file
