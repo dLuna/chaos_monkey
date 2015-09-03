@@ -9,11 +9,10 @@ or
 It also works cleanly if you include it as a dependency in rebar.
 
 To test, find yourself a project, include the path to the code, run
-application:start(pman), application:start(chaos_monkey), and then run
-chaos_monkey:on() or chaos_monkey:kill(), to kill processes over time
-or kill a single process respectively.  You can also test the
-stability of a single application with
-chaos_monkey:almost_kill([AppName]).
+application:start(chaos_monkey), and then run chaos_monkey:on() or
+chaos_monkey:kill(), to kill processes over time or kill a single
+process respectively.  You can also test the stability of a single
+application with chaos_monkey:almost_kill([AppName]).
 
 I've personally been using cowboy_examples for testing.  Just because
 installation was so extremely quick.  If your current working
