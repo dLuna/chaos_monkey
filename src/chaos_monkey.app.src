@@ -8,8 +8,7 @@
   {registered, [chaos_monkey]},
   {applications,
    [kernel,
-    stdlib,
-    pman]},
+    stdlib]},
   {mod, {chaos_monkey_app, []}},
   {env, []}
  ]
